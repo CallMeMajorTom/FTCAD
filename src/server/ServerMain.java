@@ -1,12 +1,12 @@
 package server;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 // main class for the server
 public class ServerMain {
+	int mPort = 0;
 
 	public static void main(String[] args) {
 		ServerSocket ss = null;
@@ -15,9 +15,10 @@ public class ServerMain {
 			System.err.println("Usage: java Server portnumber");
 			System.exit(-1);
 		}
-
+		int port;
 		try {
-			int port = Integer.parseInt(args[0]);
+			port = Integer.parseInt(args[0]);
+			ServerMain instance = new ServerMain(port);
 			server = new Server();
 			// listen on specified port
 			ss = new ServerSocket(port);
@@ -38,5 +39,13 @@ public class ServerMain {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	private ServerMain(int port) {
+		mPort = port;
+	}
+
+	public int getPort() {
+		return mPort;
 	}
 }
