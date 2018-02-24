@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- springok1.xml -->
+<config>
+<databases>
+    <database>
+        <role>server</role>
+        <port>25021</port>
+    </database>
+    <database>
+        <role>client</role>
+		<ip>127.0.0.1</ip>
+        <port>25021</port>
+        <username>Xiaotong</username>
+    </database>
+	    <database>
+        <role>client</role>
+		<ip>127.0.0.1</ip>
+        <port>25021</port>
+        <username>David</username>
+    </database>
+	    <database>
+        <role>client</role>
+		<ip>127.0.0.1</ip>
+        <port>25021</port>
+        <username>Peter</username>
+    </database>
+</databases>
+</config>
