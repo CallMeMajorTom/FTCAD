@@ -43,17 +43,17 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 	private GObject current = null;
 
 	private LinkedList<GObject> objectList = new LinkedList<GObject>();
-	ServerConnection sc = null;
+	FEConnection mFEConnection = null;
 
 	public void setObjectList(LinkedList<GObject> objectList) {
 		this.objectList = objectList;
 		repaint();
 	}
 
-	public GUI(int xpos, int ypos, ServerConnection sc) {
+	public GUI(int xpos, int ypos, FEConnection FEConnection) {
 		setSize(xpos, ypos);
 		setTitle("FTCAD");
-		this.sc = sc;
+		this.mFEConnection = FEConnection;
 
 		Container pane = getContentPane();
 		pane.setBackground(Color.BLACK);
@@ -140,7 +140,7 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 		if (e.getButton() == MouseEvent.BUTTON3 && objectList.size() > 0) {
 			objectList.removeLast();
 			Message message = new Message(objectList);
-			sc.sendMessage(message);
+			mFEConnection.sendMessage(message);
 		}
 		repaint();
 	}
@@ -149,7 +149,7 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 		if (current != null) {
 			objectList.addLast(current);
 			Message message = new Message(objectList);
-			sc.sendMessage(message);
+			mFEConnection.sendMessage(message);
 			current = null;
 		}
 		repaint();
