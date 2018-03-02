@@ -1,6 +1,10 @@
 package server;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -13,10 +17,12 @@ public class Server {
 	// an array list of Clients
 	private ArrayList<ClientConnection> connectedClients = new ArrayList<ClientConnection>();
 	private ArrayList Other_Server_Port = new ArrayList();
+	private DatagramSocket m_socket;
+	private DatagramPacket toSend;
 	private final int FEPort;
 	private final int Port;
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws SocketException {
 		if (args.length < 1) {
 			System.err.println("Usage: java Server portnumber");
 			System.exit(-1);
@@ -30,23 +36,28 @@ public class Server {
 		Server instance = new Server(Port,FEPort,Server_Port);
 	}
 
-	public Server(int m_Port, int m_FEPort, ArrayList Server_Port) {
+	public Server(int m_Port, int m_FEPort, ArrayList Server_Port) throws SocketException {
 			Port = m_Port;
+			m_socket = new DatagramSocket(m_Port);
 			FEPort = m_FEPort;
 			Other_Server_Port = Server_Port;
 	}
 
 
-	private void listenForClientMessages() {
+	private void listenForClientMessages() throws IOException, ClassNotFoundException {
 
 		System.out.println("Waiting for client messages... ");
 
 		do {
+			byte[] incomingData = new byte[256];
+			DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
+			ByteArrayInputStream byte_stream =new ByteArrayInputStream(incomingPacket.getData());
+			ObjectInputStream object_stream = new ObjectInputStream(byte_stream);
+			Message message = (Message)object_stream.readObject();
 		}
 		while(true);
 	}
 
-	// adds a client, returns false if name is already used
 	public synchronized boolean addClient(String hostName, int port) throws SocketException, UnknownHostException {
 		ClientConnection m_ClientConnection = new ClientConnection(hostName,port);
 		connectedClients.add(m_ClientConnection);
