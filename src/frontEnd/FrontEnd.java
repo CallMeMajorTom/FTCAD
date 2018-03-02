@@ -6,12 +6,20 @@ import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Iterator;
 
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.ConversionException;
+import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.logging.*;
+import org.apache.commons.collections.*;
+import org.apache.commons.lang.*;
 import both.Message;
 
 public class FrontEnd {
     private DatagramSocket mSocket;
-	public InetAddress mPrimaryAddress=null;
+	public final InetAddress mPrimaryAddress;
 	public int mPrimaryPort=-1;
 
     public static void main(String[] args) {//starts constructor and do a handshake
@@ -28,18 +36,32 @@ public class FrontEnd {
         }
         instance.listenAndSend();
     }
+    
     private FrontEnd(int portNumber) {//initialize variables
+    	InetAddress pa = null;
     	try {
-            mSocket = new DatagramSocket(portNumber);
+    		mSocket = new DatagramSocket(portNumber);
+			pa = InetAddress.getByName("localhost");
     	} catch (Exception e) {
     		e.printStackTrace(); 
     		System.exit(-1);
     	}
+    	mPrimaryAddress = pa;
+    	XMLConfiguration conf = null;
+		try {
+			conf = new XMLConfiguration("primary.xml");
+			mPrimaryPort=conf.getInt("port");
+		} catch (ConfigurationException e) {
+			System.err.println("primary file doesnt exist");System.exit(-1);//if primaryfile doesnt exist
+		} catch (ConversionException e) {
+			System.err.println("not a port");System.exit(-1);//if port doesnt exist
+    	}
+		System.out.println(mPrimaryPort);
     }
 
     private void listenAndSend() {
         System.out.println("Waiting for handshake...!");
-        do {
+        do {//receive
     		byte[] buf = new byte[256];
     		DatagramPacket received = new DatagramPacket(buf, buf.length);
             try {
@@ -47,7 +69,7 @@ public class FrontEnd {
             } catch (Exception e) {
             	e.printStackTrace(); 
             	System.exit(-1);
-            }
+            }//convert to msg
             byte[] incomingData = new byte[256];
         	DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
     		ByteArrayInputStream byte_stream = new ByteArrayInputStream(incomingPacket.getData());
@@ -60,19 +82,25 @@ public class FrontEnd {
     			e.printStackTrace(); 
     			System.exit(-1);
     		}
-            if(!readPrimary(msg)) send(received, msg);
+            if(!readPrimary(msg)) send(received, msg);//determine what to do
         } while (true);
     }
     
     private boolean readPrimary(Message msg){
 		if(msg.getCommand().equals("tell")) {
-			//TODO:read from file and set address n port
-			//read
-			//mPrimaryAddress=;
-			//mPrimaryPort=;
+			XMLConfiguration conf = null;
+			try {
+				conf = new XMLConfiguration("primary.xml");
+				mPrimaryPort=conf.getInt("port");
+			} catch (ConfigurationException e) {
+				System.err.println("primary file doesnt exist");System.exit(-1);//if primaryfile doesnt exist
+			} catch (ConversionException e) {
+				System.err.println("not a port");System.exit(-1);//if port doesnt exist
+	    	}
 			return true;
 		}else return false;
     }
+    
     private void send(DatagramPacket received, Message msg) {
 		if(msg.getToPrimary()) {//send to primary
 			if(mPrimaryPort!=-1) {
