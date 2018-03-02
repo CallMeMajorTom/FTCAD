@@ -4,10 +4,11 @@ package server;
  * and open the template in the editor.
  */
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.Socket;
+import java.net.*;
 
 import both.Message;
 
@@ -18,34 +19,25 @@ import both.Message;
 // Mainly responsible for sending messages
 public class ClientConnection {
 
-	Socket socket;
-	ObjectInputStream r;
-	ObjectOutputStream o;
+	private DatagramSocket m_socket = null;
+	private InetAddress m_ClientAddress = null;
+	private int m_ClientPort = -1;
 
 	// Constructor
-	public ClientConnection(Socket socket) {
-		this.socket = socket;
-		try {
-			o = new ObjectOutputStream(socket.getOutputStream());
-			r = new ObjectInputStream(socket.getInputStream());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public ClientConnection(String hostName, int ClientPort) throws SocketException, UnknownHostException {
+		this.m_ClientAddress = InetAddress.getByName(hostName);
+		this.m_ClientPort = ClientPort;
+		this.m_socket = new DatagramSocket();
 	}
 
 	// send message to client
-	public void sendMessage(Message message) {
+	public void sendMessage(Message message) throws IOException {
 		System.out.println("reply sent");
-		try {
-			o.writeObject(message);
-			o.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-	}
-
-	public ObjectInputStream getObjectInputStream() {
-		return r;
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ObjectOutputStream object_output = new ObjectOutputStream(outputStream);
+		object_output.writeObject(message);
+		byte[] data = outputStream.toByteArray();
+		DatagramPacket sendPacket = new DatagramPacket(data, data.length, m_ClientAddress,m_ClientPort);
+		m_socket.send(sendPacket);
 	}
 }
