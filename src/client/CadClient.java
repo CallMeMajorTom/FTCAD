@@ -6,25 +6,46 @@
 package client;
 
 import both.Message;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.XMLConfiguration;
+import server.Server;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 public class CadClient {
 	static private GUI gui = null;
 	static FEConnection m_FEConnection = null;
+	private int m_Port;
+	private InetAddress m_Address;
+    private final int FEPort;
+    private final String FE_Address;
 
-	public static void main(String[] args) throws IOException, ClassNotFoundException {
-		m_FEConnection = new FEConnection((args[0]), Integer.parseInt(args[1]));
-		gui = new GUI(750, 600,m_FEConnection);
-		gui.addToListener();
-		CadClient c = new CadClient();
-		c.listenForServerMessages();
+	public static void main(String[] args) throws IOException, ConfigurationException {
+        if (args.length < 1) {
+            System.err.println("Usage: not enough arguments");
+            System.exit(-1);
+        }
+        InetAddress address = InetAddress.getByName(args[0]);
+        int m_port = Integer.parseInt(args[1]);
+        CadClient c = new CadClient(address,m_port);
 	}
 
-	private CadClient() {
-
+	private CadClient(InetAddress m_address, int m_port) throws ConfigurationException, SocketException, UnknownHostException {
+        m_Address = m_address;
+        m_Port = m_port;
+        XMLConfiguration conf = new XMLConfiguration("configuration.xml");
+        int i = 0;
+        for(i = 0;i < 4; i++){
+            if(conf.getString("databases.database("+i+").role").equals("frontend"))
+                break;
+        }
+        FEPort = conf.getInt("databases.database("+i+").port");
+        FE_Address = conf.getString("databases.database("+i+").ip");
+        m_FEConnection = new FEConnection(FE_Address,FEPort);
 	}
 
 	private void listenForServerMessages() throws IOException, ClassNotFoundException {

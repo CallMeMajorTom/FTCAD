@@ -43,7 +43,7 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 	private GObject current = null;
 
 	private LinkedList<GObject> objectList = new LinkedList<GObject>();
-	FEConnection mFEConnection = null;
+	private FEConnection m_FEConnection = null;
 
 	public void setObjectList(LinkedList<GObject> objectList) {
 		this.objectList = objectList;
@@ -138,9 +138,8 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 		// User clicks the right mouse button:
 		// undo an operation by removing the most recently added object.
 		if (e.getButton() == MouseEvent.BUTTON3 && objectList.size() > 0) {
-			objectList.removeLast();
-			Message message = new Message(objectList);
-			mFEConnection.sendMessage(message);
+			Message message = new Message(null,"remove",true,m_FEConnection.);
+			m_FEConnection.sendChatMessage(message);
 		}
 		repaint();
 	}
