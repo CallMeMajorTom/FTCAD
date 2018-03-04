@@ -5,62 +5,67 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.ServerSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import both.Message;
 
-import javax.print.attribute.standard.MediaSize;
-
 public class Server {
-	// an array list of Clients
-	private ArrayList<ClientConnection> connectedClients = new ArrayList<ClientConnection>();
-	private ArrayList Other_Server_Port = new ArrayList();
-	private DatagramSocket m_socket;
-	private DatagramPacket toSend;
-	private final int FEPort;
-	private final int Port;
+	private ArrayList<ClientConnection> mClientConnections = new ArrayList<ClientConnection>();//array list of Clients
+	private ArrayList<ReplicaConnection> mReplicaConnections = new ArrayList<ReplicaConnection>();
+	private ServerSocket mTSocket;
+	private DatagramSocket mUSocket;
+	private DatagramPacket mToSend;
+	private final int mFEPort;
+	private final int mPort;
 
 	public static void main(String[] args) throws SocketException {
-		if (args.length < 1) {
-			System.err.println("Usage: java Server portnumber");
+		if (args.length < 2) {
+			System.err.println("Need both port and feport");
 			System.exit(-1);
 		}
 		int Port = Integer.parseInt(args[0]);
 		int FEPort = Integer.parseInt(args[1]);
-		ArrayList Server_Port = new ArrayList();
+		Server instance = new Server(Port, FEPort);
 		for(int i = 2; i < args.length; i++)
-			Server_Port.add(Integer.parseInt(args[i]));
-
-		Server instance = new Server(Port,FEPort,Server_Port);
+			instance.addReplicas(Integer.parseInt(args[i]));
+		instance.listenForClientMessages();
 	}
 
-	public Server(int m_Port, int m_FEPort, ArrayList Server_Port) throws SocketException {
-			Port = m_Port;
-			m_socket = new DatagramSocket(m_Port);
-			FEPort = m_FEPort;
-			Other_Server_Port = Server_Port;
+	public Server(int Port, int FEPort) throws SocketException {
+			mPort = Port;
+			mFEPort = FEPort;
+			mUSocket = new DatagramSocket(Port);
+			try {mTSocket = new ServerSocket(mPort);} catch (IOException e) {e.printStackTrace(); System.exit(-1);}
+			//FEConnection = new FEConnection("localhost", mFEPort);
 	}
 
+	private void addReplicas(int port) {
+		ReplicaConnection rep = new ReplicaConnection(port, this, mTSocket);
+		Thread thread = new Thread(rep);
+		thread.start();
+		mReplicaConnections.add(rep);
+	}
 
-	private void listenForClientMessages() throws IOException, ClassNotFoundException {
-
+	private void listenForClientMessages() {
 		System.out.println("Waiting for client messages... ");
-
 		do {
 			byte[] incomingData = new byte[256];
 			DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
 			ByteArrayInputStream byte_stream =new ByteArrayInputStream(incomingPacket.getData());
-			ObjectInputStream object_stream = new ObjectInputStream(byte_stream);
-			Message message = (Message)object_stream.readObject();
+			try {
+				ObjectInputStream object_stream = new ObjectInputStream(byte_stream);
+				Message message = (Message)object_stream.readObject();
+			} catch (Exception e) {e.printStackTrace(); System.exit(-1);}
 		}
 		while(true);
 	}
 
 	public synchronized boolean addClient(String hostName, int port) throws SocketException, UnknownHostException {
 		ClientConnection m_ClientConnection = new ClientConnection(hostName,port);
-		connectedClients.add(m_ClientConnection);
+		mClientConnections.add(m_ClientConnection);
 		ListenerThread receive_message = new ListenerThread(this, m_ClientConnection);
 		receive_message.start();
 		System.out.println("Client added");
@@ -68,9 +73,14 @@ public class Server {
 	}
 
 	public synchronized void broadcast(Message message) throws IOException {
-		for (ClientConnection cc : connectedClients) {
+		for (ClientConnection cc : mClientConnections) {
 			cc.sendMessage(message);
 		}
+	}
+
+	synchronized public void controlRecieveMessage(ReplicaConnection replicaConnection, String umsg) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
