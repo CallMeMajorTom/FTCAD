@@ -59,7 +59,8 @@ public class FrontEnd {
 
     private void listenAndSend() {
         System.out.println("Waiting for handshake...!");
-        do {//receive
+        do {
+        	//receive
     		byte[] buf = new byte[256];
     		DatagramPacket received = new DatagramPacket(buf, buf.length);
             try {
@@ -67,7 +68,8 @@ public class FrontEnd {
             } catch (Exception e) {
             	e.printStackTrace(); 
             	System.exit(-1);
-            }//convert to msg
+            }
+            //convert to msg
             byte[] incomingData = new byte[256];
         	DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
     		ByteArrayInputStream byte_stream = new ByteArrayInputStream(incomingPacket.getData());
@@ -80,7 +82,7 @@ public class FrontEnd {
     			e.printStackTrace(); 
     			System.exit(-1);
     		}
-            if(!readPrimary(msg)) send(received, msg);//determine what to do
+            if(!readPrimary(msg)) send(received, msg);//determine what to do with the msg
         } while (true);
     }
     
