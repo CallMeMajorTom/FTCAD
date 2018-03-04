@@ -5,6 +5,7 @@
 
 package client;
 
+import both.GObject;
 import both.Message;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -15,8 +16,11 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class CadClient {
+
+    private LinkedList<GObject> ObejectList = new LinkedList<>();
 	static private GUI gui = null;
 	static FEConnection m_FEConnection = null;
 	private int m_Port;
@@ -51,7 +55,25 @@ public class CadClient {
 	private void listenForServerMessages() throws IOException, ClassNotFoundException {
 		do {
 			Message message = m_FEConnection.receiveChatMessage();
-			gui.setObjectList(message.getObjectList());
+			if(message.getCommand().equalsIgnoreCase("/draw")){
+			    ObejectList.add(message.getObject());
+            }
+            else if(message.getCommand().equalsIgnoreCase("/remove")){
+			    ObejectList.removeLast();
+            }
+			gui.setObjectList(ObejectList);
 		} while (true);
 	}
+
+	public InetAddress getM_Address(){
+        return m_Address;
+    }
+
+    public int getM_Port(){
+        return m_Port;
+    }
+
+    public FEConnection getM_FEConnection(){
+	    return m_FEConnection;
+    }
 }

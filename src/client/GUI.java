@@ -16,6 +16,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
@@ -43,17 +44,17 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 	private GObject current = null;
 
 	private LinkedList<GObject> objectList = new LinkedList<GObject>();
-	private FEConnection m_FEConnection = null;
+	private CadClient client = null;
 
 	public void setObjectList(LinkedList<GObject> objectList) {
 		this.objectList = objectList;
 		repaint();
 	}
 
-	public GUI(int xpos, int ypos, FEConnection FEConnection) {
+	public GUI(int xpos, int ypos, CadClient m_client) {
 		setSize(xpos, ypos);
 		setTitle("FTCAD");
-		this.mFEConnection = FEConnection;
+		client = m_client;
 
 		Container pane = getContentPane();
 		pane.setBackground(Color.BLACK);
@@ -138,17 +139,24 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 		// User clicks the right mouse button:
 		// undo an operation by removing the most recently added object.
 		if (e.getButton() == MouseEvent.BUTTON3 && objectList.size() > 0) {
-			Message message = new Message(null,"remove",true,m_FEConnection.);
-			m_FEConnection.sendChatMessage(message);
+			Message message = new Message("/remove",null,true,client.getM_Address(),client.getM_Port());
+			try {
+				client.getM_FEConnection().sendChatMessage(message);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 		}
 		repaint();
 	}
 
 	public void mouseReleased(MouseEvent e) {
 		if (current != null) {
-			objectList.addLast(current);
-			Message message = new Message(objectList);
-			mFEConnection.sendMessage(message);
+			Message message = new Message("/draw",current,true,client.getM_Address(),client.getM_Port());
+			try {
+				client.getM_FEConnection().sendChatMessage(message);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 			current = null;
 		}
 		repaint();

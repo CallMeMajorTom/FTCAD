@@ -6,29 +6,33 @@ import java.util.LinkedList;
 
 public class Message implements Serializable {
 	private static final long serialVersionUID = 1L;
-	private LinkedList<GObject> objectList ;
+	private GObject mObject;
 	private String mCommand;
 	private	final boolean mToPrimary;
 	private final InetAddress mClient;
 	private final int mPort;
 
-	public Message(LinkedList<GObject> objectList, String command, boolean toPrimary, InetAddress lClient, int Port) {
+	public Message(String command,GObject parameter, boolean toPrimary, InetAddress lClient, int Port) {
 		super();
-		this.objectList = objectList;
+		mObject = parameter;
 		mCommand = command;
 		mToPrimary = toPrimary;
 		mClient = lClient;
 		mPort = Port;
 	}
 
-	public LinkedList<GObject> getObjectList() {
+	/*public LinkedList<GObject> getObjectList() {
 		return objectList;
 	}
 
 	public void setObjectList(LinkedList<GObject> objectList) {
 		this.objectList = objectList;
+	}*/
+
+	public GObject getObject() {
+		return mObject;
 	}
-	
+
 	public String getCommand() {
 		return mCommand;
 	}
