@@ -9,6 +9,7 @@ import java.net.ServerSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import both.Message;
 
@@ -20,6 +21,7 @@ public class Server {
 	private DatagramPacket mToSend;
 	private final int mFEPort;
 	private final int mPort;
+	private boolean primary;
 
 	public static void main(String[] args) throws SocketException {
 		if (args.length < 2) {
@@ -31,7 +33,7 @@ public class Server {
 		Server instance = new Server(Port, FEPort);
 		for(int i = 2; i < args.length; i++)
 			instance.addReplicas(Integer.parseInt(args[i]));
-		instance.listenForClientMessages();
+		instance.init();
 	}
 
 	public Server(int Port, int FEPort) throws SocketException {
@@ -39,6 +41,7 @@ public class Server {
 			mFEPort = FEPort;
 			mUSocket = new DatagramSocket(Port);
 			try {mTSocket = new ServerSocket(mPort);} catch (IOException e) {e.printStackTrace(); System.exit(-1);}
+			primary = false;
 			//FEConnection = new FEConnection("localhost", mFEPort);
 	}
 
@@ -47,6 +50,37 @@ public class Server {
 		Thread thread = new Thread(rep);
 		thread.start();
 		mReplicaConnections.add(rep);
+	}
+
+	private void init() {
+		do {
+			if(-1 == whoIsPrimary()) election(); else join();
+			if(primary)actAsPrimary(); else actAsBackup();
+		} while(true);
+	}
+
+	private void actAsBackup() {
+	}
+
+	private void actAsPrimary() {
+	}
+
+	private void join() {
+	}
+
+	private void election() {
+	}
+
+	private int whoIsPrimary() {
+		int winner = -1;
+		ReplicaConnection c;
+		for(Iterator<ReplicaConnection> i = mReplicaConnections.iterator(); i.hasNext();) {
+			c=i.next();
+			c.sendMessage("whoIsPrimary");
+			int r = c.receiveMessage2();
+			if(-1!=r) {winner = r;	break;}
+		}
+		return winner;
 	}
 
 	private void listenForClientMessages() {

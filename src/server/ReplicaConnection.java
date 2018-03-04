@@ -47,7 +47,7 @@ public class ReplicaConnection extends Thread{
 	}
 	
 	public void run(){
-		do{recieveMessage();
+		do{receiveMessage();
 		} while(mAlive);
 	}
 	
@@ -65,7 +65,7 @@ public class ReplicaConnection extends Thread{
 		}
 	}
 	
-	private void recieveMessage() {
+	private void receiveMessage() {
 		//recieve message
     	Object obj = null;
 		boolean clientcrash = false;
@@ -104,5 +104,10 @@ public class ReplicaConnection extends Thread{
 	
 	public boolean getAlive() {
 		return mAlive;
+	}
+
+	public int receiveMessage2() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }
