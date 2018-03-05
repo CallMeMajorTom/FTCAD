@@ -53,8 +53,9 @@ public class Server {
 
 	private void init() {
 		do {
-			if(-1 == whoIsPrimary()) election(); else join();
-			if(mPrimary)actAsPrimary(); else actAsBackup();
+			//if(-1 == whoIsPrimary()) election(); else join();
+			//if(mPrimary)actAsPrimary(); else actAsBackup();
+			actAsPrimary();
 		} while(true);
 	}
 
