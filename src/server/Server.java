@@ -21,7 +21,7 @@ public class Server {
 	private DatagramPacket mToSend;
 	private final int mFEPort;
 	private final int mPort;
-	private boolean primary;
+	private boolean mPrimary;
 
 	public static void main(String[] args) throws SocketException {
 		if (args.length < 2) {
@@ -39,10 +39,9 @@ public class Server {
 	public Server(int Port, int FEPort) throws SocketException {
 			mPort = Port;
 			mFEPort = FEPort;
-			mUSocket = new DatagramSocket(Port);
+			mUSocket = new DatagramSocket(null);
 			try {mTSocket = new ServerSocket(mPort);} catch (IOException e) {e.printStackTrace(); System.exit(-1);}
-			primary = false;
-			//FEConnection = new FEConnection("localhost", mFEPort);
+			mPrimary = false;
 	}
 
 	private void addReplicas(int port) {
@@ -55,7 +54,7 @@ public class Server {
 	private void init() {
 		do {
 			if(-1 == whoIsPrimary()) election(); else join();
-			if(primary)actAsPrimary(); else actAsBackup();
+			if(mPrimary)actAsPrimary(); else actAsBackup();
 		} while(true);
 	}
 
