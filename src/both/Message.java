@@ -2,18 +2,24 @@ package both;
 
 import java.io.Serializable;
 import java.net.InetAddress;
-import java.util.LinkedList;
+import java.util.UUID;
 
 public class Message implements Serializable {
 	private static final long serialVersionUID = 1L;
+	private boolean msgType;
+	private final UUID mID;
 	private GObject mObject;
 	private String mCommand;
 	private	final boolean mToPrimary;
 	private final InetAddress mClient;
 	private final int mPort;
+	private boolean confirmed = false;
 
-	public Message(String command,GObject parameter, boolean toPrimary, InetAddress lClient, int Port) {
+
+	public Message(boolean messageType,UUID ID,String command,GObject parameter, boolean toPrimary, InetAddress lClient, int Port) {
 		super();
+		msgType = messageType;
+		mID = ID;
 		mObject = parameter;
 		mCommand = command;
 		mToPrimary = toPrimary;
@@ -21,13 +27,13 @@ public class Message implements Serializable {
 		mPort = Port;
 	}
 
-	/*public LinkedList<GObject> getObjectList() {
-		return objectList;
+	public boolean getConfirmed(){
+		return confirmed;
 	}
 
-	public void setObjectList(LinkedList<GObject> objectList) {
-		this.objectList = objectList;
-	}*/
+	public boolean getMsgType(){
+		return msgType;
+	}
 
 	public GObject getObject() {
 		return mObject;
@@ -43,6 +49,10 @@ public class Message implements Serializable {
 	
 	public InetAddress getClient() {
 		return mClient;
+	}
+
+	public UUID getID(){
+		return mID;
 	}
 	
 	public int getPort() {
