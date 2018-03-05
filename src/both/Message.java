@@ -2,12 +2,11 @@ package both;
 
 import java.io.Serializable;
 import java.net.InetAddress;
-import java.util.UUID;
 
 public class Message implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private boolean msgType;
-	private final UUID mID;
+	private final int mID;
 	private GObject mObject;
 	private String mCommand;
 	private	final boolean mToPrimary;
@@ -16,7 +15,7 @@ public class Message implements Serializable {
 	private boolean confirmed = false;
 
 
-	public Message(boolean messageType,UUID ID,String command,GObject parameter, boolean toPrimary, InetAddress lClient, int Port) {
+	public Message(boolean messageType,int ID,String command,GObject parameter, boolean toPrimary, InetAddress lClient, int Port) {
 		super();
 		msgType = messageType;
 		mID = ID;
@@ -51,7 +50,7 @@ public class Message implements Serializable {
 		return mClient;
 	}
 
-	public UUID getID(){
+	public int getID(){
 		return mID;
 	}
 	

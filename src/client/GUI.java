@@ -19,7 +19,6 @@ import java.awt.event.WindowListener;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.ListIterator;
-
 import javax.swing.JButton;
 import javax.swing.JFrame;
 
@@ -139,7 +138,8 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 		// User clicks the right mouse button:
 		// undo an operation by removing the most recently added object.
 		if (e.getButton() == MouseEvent.BUTTON3 && objectList.size() > 0) {
-			Message message = new Message("/remove",null,true,client.getM_Address(),client.getM_Port());
+			int id = client.increaseID();
+			Message message = new Message(true,id,"/remove",null,true,client.getM_Address(),client.getM_Port());
 			try {
 				client.getM_FEConnection().sendChatMessage(message);
 			} catch (IOException e1) {
@@ -151,7 +151,8 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 
 	public void mouseReleased(MouseEvent e) {
 		if (current != null) {
-			Message message = new Message("/draw",current,true,client.getM_Address(),client.getM_Port());
+			int id = client.increaseID();
+			Message message = new Message(true,id,"/draw",current,true,client.getM_Address(),client.getM_Port());
 			try {
 				client.getM_FEConnection().sendChatMessage(message);
 			} catch (IOException e1) {
