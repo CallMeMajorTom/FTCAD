@@ -9,15 +9,10 @@ import both.GObject;
 import both.Message;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
-import server.Server;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.UUID;
 
 public class CadClient {
 	// globals fields

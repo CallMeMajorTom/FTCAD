@@ -1,8 +1,4 @@
 package client;
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 import java.io.*;
 import java.net.DatagramPacket;
@@ -10,24 +6,22 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
 import both.Message;
 import both.Worker;
 
-/**
- *
- * @author brom
- */
 public class FEConnection extends  Thread{
 
 	private DatagramSocket m_socket = null;
 	private InetAddress m_FEAddress = null;
-	private LinkedList<Message> ReceivedList = new LinkedList<Message>();
-	private LinkedList<Message> SendList = new LinkedList<Message>();
+	private LinkedList<Message> mReceivedList = new LinkedList<Message>();
+	private LinkedList<Message> mSendList = new LinkedList<Message>();
 	private int m_FEPort = -1;
-	private int expected = 1;//expected is the expected message ID to garantee order id
+	private int mCSM=1; //current sent message
+	private int mExpected = 1;//expected is the expected message ID to garantee order id
 	private int lock = 1;//lock means the element before lock is ordered
 
 	public FEConnection(String hostName, int port) throws SocketException, UnknownHostException {
@@ -41,24 +35,22 @@ public class FEConnection extends  Thread{
 		 while(true){
 			 try {
 				 message = receiveChatMessage();
-			 } catch (IOException e) {
-				 e.printStackTrace();
-			 } catch (ClassNotFoundException e) {
-				 e.printStackTrace();
-			 }
+			 } catch (Exception e) {
+				 e.printStackTrace();System.exit(-1);
+			 } 
 			 if(!message.getMsgType()){//Operate the ack
-				message.worker.setAck();
+				message.setConfirmedAsTrue();
 			 }
 			 else {//Operate the ordering
-			 	if(message.getID() == expected){//receive the expected one
-					ReceivedList.addFirst(message);
-					for ( ListIterator<Message> itr = ReceivedList.listIterator();itr.hasNext();){
+			 	if(message.getID() == mExpected){//receive the expected one
+					mReceivedList.addFirst(message);
+					for ( ListIterator<Message> itr = mReceivedList.listIterator();itr.hasNext();){
 						if(itr.next().getID() == lock) lock++;
 						else break;
 					}
 				}
 				else{//receive unexpected message
-					ListIterator<Message> itr = ReceivedList.listIterator();
+					ListIterator<Message> itr = mReceivedList.listIterator();
 					for ( ;itr.hasNext(););
 					while(itr.hasPrevious()){//find the proper position and insert
 						if(itr.next().getID() > message.getID()) continue;
@@ -78,15 +70,18 @@ public class FEConnection extends  Thread{
 		return message;
 	}
 
-	public void sendChatMessage(Message message) throws IOException {
+	public void sendChatMessage(Message message) {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		ObjectOutputStream object_output = null;
-		object_output = new ObjectOutputStream(outputStream);
-		object_output.writeObject(message);
+		try {
+			object_output = new ObjectOutputStream(outputStream);
+			object_output.writeObject(message);
+		} catch (IOException e) {
+			e.printStackTrace(); System.exit(-1);
+		}
 		byte[] data = outputStream.toByteArray();
 		DatagramPacket sendPacket = new DatagramPacket(data, data.length, m_FEAddress, m_FEPort);
-		message.worker = new Worker(sendPacket,m_socket,message);
-		message.worker.start();
+		new Thread(new Worker(sendPacket,m_socket,message)).start();
 		/*if (message.getMsgType()) {
 			new Thread(
 				new Runnable() {
@@ -115,7 +110,7 @@ public class FEConnection extends  Thread{
 	}
 
 	public int getExpected(){
-		return expected;
+		return mExpected;
 	}
 
 	public int getLock(){
@@ -123,17 +118,58 @@ public class FEConnection extends  Thread{
 	}
 
 	public int increaseExpected(){
-		return expected++;
+		return mExpected++;
 	}
 
 	public void removeFirst(){
-		ReceivedList.removeFirst();
+		mReceivedList.removeFirst();
 	}
 
 	public Message getMsg(int ID){
-		for ( ListIterator<Message> itr = ReceivedList.listIterator();itr.hasNext();){
+		for ( ListIterator<Message> itr = mReceivedList.listIterator();itr.hasNext();){
 			if(itr.next().getID() == ID) return itr.next();
 		}
+		return null;
+	}
+	
+	public void receiveMessage(Message message){
+		if (receiveDiffusion()){
+			if(!message.getMsgType()) {//record and send acknowledge
+				message.setMsgTypeAsTrue();
+				recordMessage(message);
+				sendChatMessage(message);
+			}
+		}
+	}
+
+	private boolean receiveDiffusion() {
+		// if first time of this message returns true otherwise false
+		return true;
+	}
+
+	private void recordMessage(Message message) {
+		mReceivedList.add(message);
+		if(mExpected == message.getID()) produceExpected(message);
+	}
+	
+	private void produceExpected(Message message) {
+		//produce for server to consume
+		mExpected++;
+		//search receivedmessages for next expected one if found call it with this function
+		if (searchExpected()) produceExpected(getExpectedMsg());
+	}
+
+	private boolean searchExpected() {
+		// TODO Auto-generated method stub
+		for(Iterator<Message> i = mReceivedList.iterator(); i.hasNext();  ) {
+			Message msg = i.next();
+			if(mExpected == msg.getID()) return true;
+		}
+		return false;
+	}
+
+	private Message getExpectedMsg() {
+		// TODO Auto-generated method stub
 		return null;
 	}
 }

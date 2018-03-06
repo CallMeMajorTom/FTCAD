@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -22,6 +23,8 @@ public class Server {
 	private final int mFEPort;
 	private final int mPort;
 	private boolean mPrimary;
+	
+	private final String mAddress = "localhost";
 
 	public static void main(String[] args) throws SocketException {
 		if (args.length < 2) {
@@ -36,11 +39,12 @@ public class Server {
 		instance.init();
 	}
 
-	public Server(int Port, int FEPort) throws SocketException {
+	private Server(int Port, int FEPort){
 			mPort = Port;
 			mFEPort = FEPort;
-			mUSocket = new DatagramSocket(null);
-			try {mTSocket = new ServerSocket(mPort);} catch (IOException e) {e.printStackTrace(); System.exit(-1);}
+			try {mTSocket = new ServerSocket(mPort);
+				mUSocket = new DatagramSocket(mPort);
+			} catch (IOException e) {e.printStackTrace(); System.exit(-1);}
 			mPrimary = false;
 	}
 
@@ -60,16 +64,19 @@ public class Server {
 	}
 
 	private void actAsBackup() {
+		//TODO
 	}
 
 	private void actAsPrimary() {
-		
+		//TODO
 	}
 
 	private void join() {
+		//TODO
 	}
 
 	private void election() {
+		//TODO
 	}
 
 	private int whoIsPrimary() {
@@ -99,7 +106,8 @@ public class Server {
 	}
 
 	public synchronized boolean addClient(String hostName, int port) throws SocketException, UnknownHostException {
-		ClientConnection m_ClientConnection = new ClientConnection(hostName,port);
+		InetAddress naddress = InetAddress.getByName(mAddress);
+		ClientConnection m_ClientConnection = new ClientConnection(naddress, port, mUSocket);
 		mClientConnections.add(m_ClientConnection);
 		ListenerThread receive_message = new ListenerThread(this, m_ClientConnection);
 		receive_message.start();

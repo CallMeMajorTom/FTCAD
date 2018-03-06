@@ -16,7 +16,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import javax.swing.JButton;
@@ -140,11 +139,7 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 		if (e.getButton() == MouseEvent.BUTTON3 && objectList.size() > 0) {
 			int id = client.increaseID();
 			Message message = new Message(true,id,"/remove",null,true,client.getM_Address(),client.getM_Port());
-			try {
-				client.getM_FEConnection().sendChatMessage(message);
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
+			client.getM_FEConnection().sendChatMessage(message);
 		}
 		repaint();
 	}
@@ -153,11 +148,7 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 		if (current != null) {
 			int id = client.increaseID();
 			Message message = new Message(true,id,"/draw",current,true,client.getM_Address(),client.getM_Port());
-			try {
-				client.getM_FEConnection().sendChatMessage(message);
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
+			client.getM_FEConnection().sendChatMessage(message);
 			current = null;
 		}
 		repaint();

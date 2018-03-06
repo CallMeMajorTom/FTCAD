@@ -13,8 +13,6 @@ public class Message implements Serializable {
 	private final InetAddress mClient;
 	private final int mPort;
 	private boolean confirmed = false;
-	public Worker worker = null;
-
 
 	public Message(boolean messageType, int ID,String command, GObject parameter, 
 			boolean toPrimary, InetAddress lClient, int Port) {

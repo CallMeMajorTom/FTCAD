@@ -42,15 +42,7 @@ public class FrontEnd {
     		System.exit(-1);
     	}
     	mPrimaryAddress = pa;
-    	XMLConfiguration conf = null;
-		try {
-			conf = new XMLConfiguration("primary.xml");
-			mPrimaryPort=conf.getInt("port");
-		} catch (ConfigurationException e) {
-			System.err.println("primary file doesnt exist");System.exit(-1);//if primaryfile doesnt exist
-		} catch (ConversionException e) {
-			System.err.println("not a port");System.exit(-1);//if port doesnt exist
-    	}
+    	mPrimaryPort = readfile();//for testing only
 		System.out.println(mPrimaryPort);
     }
 
@@ -85,17 +77,22 @@ public class FrontEnd {
     
     private boolean readPrimary(Message msg){
 		if(msg.getCommand().equals("tell")) {
-			XMLConfiguration conf = null;
-			try {
-				conf = new XMLConfiguration("primary.xml");
-				mPrimaryPort=conf.getInt("port");
-			} catch (ConfigurationException e) {
-				System.err.println("primary file doesnt exist");System.exit(-1);//if primaryfile doesnt exist
-			} catch (ConversionException e) {
-				System.err.println("not a port");System.exit(-1);//if port doesnt exist
-	    	}
+			mPrimaryPort = readfile();
 			return true;
 		}else return false;
+    }
+    
+    private int readfile() {
+		XMLConfiguration conf = null;
+		try {
+			conf = new XMLConfiguration("primary.xml");
+			return conf.getInt("port");
+		} catch (ConfigurationException e) {
+			System.err.println("primary file doesnt exist");System.exit(-1);//if primaryfile doesnt exist
+		} catch (ConversionException e) {
+			System.err.println("not a port");System.exit(-1);//if port doesnt exist
+    	}
+    	return 0;
     }
     
     private void send(DatagramPacket received, Message msg) {
