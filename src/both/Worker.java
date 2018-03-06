@@ -7,17 +7,13 @@ public class Worker extends Thread{
 	static double TRANSMISSION_FAILURE_RATE = 0.3;
 	private DatagramPacket mMessage = null;
 	private DatagramSocket mSocket = null;
-	private boolean mAck;
+	private Message mAck;
 
-	public Worker(DatagramPacket message, DatagramSocket l_socket, boolean acknowledgment) {
+	public Worker(DatagramPacket message, DatagramSocket l_socket, Message acknowledgment) {
 		super();
 		this.mMessage = message;
 		this.mSocket = l_socket;
 		this.mAck = acknowledgment;
-	}
-
-	public void setAck(){
-		mAck = true;
 	}
 
 	public void run() {
@@ -28,6 +24,6 @@ public class Worker extends Thread{
 			} catch (Exception e) {
 				e.printStackTrace();System.exit(-1);
 			}
-		} while (!mAck);
+		} while (!mAck.getConfirmed());
 	}
 }
