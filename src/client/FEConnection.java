@@ -85,7 +85,7 @@ public class FEConnection extends  Thread{
 		object_output.writeObject(message);
 		byte[] data = outputStream.toByteArray();
 		DatagramPacket sendPacket = new DatagramPacket(data, data.length, m_FEAddress, m_FEPort);
-		message.worker = new Worker(sendPacket,m_socket,false);
+		message.worker = new Worker(sendPacket,m_socket,message);
 		message.worker.start();
 		/*if (message.getMsgType()) {
 			new Thread(
