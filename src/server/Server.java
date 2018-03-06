@@ -63,6 +63,7 @@ public class Server {
 	}
 
 	private void actAsPrimary() {
+		
 	}
 
 	private void join() {
@@ -113,8 +114,6 @@ public class Server {
 	}
 
 	synchronized public void controlRecieveMessage(ReplicaConnection replicaConnection, String umsg) {
-		// TODO Auto-generated method stub
-		
 	}
 
 }

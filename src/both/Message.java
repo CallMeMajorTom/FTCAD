@@ -5,7 +5,7 @@ import java.net.InetAddress;
 
 public class Message implements Serializable {
 	private static final long serialVersionUID = 1L;
-	private boolean msgType;
+	private boolean msgType;//false is send, true is acknowledge
 	private final int mID;
 	private GObject mObject;
 	private String mCommand;
@@ -16,7 +16,8 @@ public class Message implements Serializable {
 	public Worker worker = null;
 
 
-	public Message(boolean messageType,int ID,String command,GObject parameter, boolean toPrimary, InetAddress lClient, int Port) {
+	public Message(boolean messageType, int ID,String command, GObject parameter, 
+			boolean toPrimary, InetAddress lClient, int Port) {
 		super();
 		msgType = messageType;
 		mID = ID;
@@ -37,6 +38,10 @@ public class Message implements Serializable {
 
 	public boolean getMsgType(){
 		return msgType;
+	}
+	
+	public void setMsgTypeAsTrue(){
+		msgType = true;
 	}
 
 	public GObject getObject() {

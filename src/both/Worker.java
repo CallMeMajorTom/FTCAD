@@ -2,9 +2,10 @@ package both;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-
+//handles the sending of server and client messages
 public class Worker extends Thread{
 	static double TRANSMISSION_FAILURE_RATE = 0.3;
+	private final int mDiffusion = 10;
 	private DatagramPacket mMessage = null;
 	private DatagramSocket mSocket = null;
 	private Message mAck;
@@ -19,7 +20,8 @@ public class Worker extends Thread{
 	public void run() {
 		do{
 			try {
-				mSocket.send(mMessage);
+				for(int i = 0; i<mDiffusion;i++) 
+					mSocket.send(mMessage);
 				Thread.sleep(50);
 			} catch (Exception e) {
 				e.printStackTrace();System.exit(-1);

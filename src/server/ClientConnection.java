@@ -6,9 +6,8 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import both.Message;
 import both.Worker;
@@ -17,47 +16,85 @@ import both.Worker;
 // acknowledge received messages
 public class ClientConnection extends Thread {
 
-	private DatagramSocket m_socket = null;
-	private InetAddress m_ClientAddress = null;
+	private final DatagramSocket mSocket;
 	private final int mPort;
-	private final String mAddress;
+	
+	private InetAddress mAddress = null;
 	private ArrayList<Message> mSentMessages = new ArrayList<Message>();
-	private ArrayList<Message> mReceiveMessages = new ArrayList<Message>();
+	private ArrayList<Message> mReceivedMessages = new ArrayList<Message>();
+	private int mCSM=1; //current sent message
+	private int mCEM=1; //current expected message
+	private boolean mAlive = true;
 
 	// Constructor
-	public ClientConnection(String clientName, int ClientPort, DatagramSocket fesocket) {
+	public ClientConnection(InetAddress clientName, int ClientPort, DatagramSocket fesocket) {
 		this.mAddress = clientName;
 		this.mPort = ClientPort;
-		this.m_socket = fesocket;
-	}
-
-	public void setmSentMessages(ArrayList<Message> mSentMessages) {
-		this.mSentMessages = mSentMessages;
-	}
-
-	public void setmReceiveMessages(ArrayList<Message> mReceiveMessages) {
-		this.mReceiveMessages = mReceiveMessages;
+		this.mSocket = fesocket;
 	}
 
 	// send message to client
-	public void sendMessage(Message message) throws IOException {
+	public void sendMessage(Message message){
 		System.out.println("reply sent");
 		mSentMessages.add(message);
+		//convert message to bytearray
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		ObjectOutputStream object_output = new ObjectOutputStream(outputStream);
-		object_output.writeObject(message);
+		try {
+			ObjectOutputStream object_output = new ObjectOutputStream(outputStream);
+			object_output.writeObject(message);
+		} catch (IOException e) {
+			e.printStackTrace(); System.exit(-1);
+		}
 		byte[] data = outputStream.toByteArray();
-		DatagramPacket sendPacket = new DatagramPacket(data, data.length, m_ClientAddress, mPort);
-		new Thread(new Worker(sendPacket, m_socket, message)).start();
-
+		//send
+		DatagramPacket sendPacket = new DatagramPacket(data, data.length, mAddress, mPort);
+		new Thread(new Worker(sendPacket, mSocket, message)).start();
 	}
 	
-	public void receiveMessage(){
+	public void receiveMessage(Message message){
+		if (receiveDiffusion()){
+			if(!message.getMsgType()) {//record and send acknowledge
+				message.setMsgTypeAsTrue();
+				recordMessage(message);
+				sendMessage(message);
+			}
+		}
+	}
+
+	private boolean receiveDiffusion() {
+		// if first time of this message returns true otherwise false
+		return true;
+	}
+
+	private void recordMessage(Message message) {
+		mReceivedMessages.add(message);
+		if(mCEM == message.getID()) produceExpected(message);
+	}
+	
+	private void produceExpected(Message message) {
+		//produce for server to consume
+		mCEM++;
+		//search receivedmessages for next expected one if found call it with this function
+		if (searchExpected()) produceExpected(getExpected());
 		
+	}
+
+	private boolean searchExpected() {
+		// TODO Auto-generated method stub
+		for(Iterator<Message> i = mReceivedMessages.iterator(); i.hasNext();  ) {
+			Message msg = i.next();
+			if(mCEM == msg.getID()) return true;
+		}
+		return false;
+	}
+
+	private Message getExpected() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	public void run() {
-		
+		while(mAlive ) {}
 	}
 
 }

@@ -10,9 +10,6 @@ import java.net.InetAddress;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.ConversionException;
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.logging.*;
-import org.apache.commons.collections.*;
-import org.apache.commons.lang.*;
 import both.Message;
 
 public class FrontEnd {
