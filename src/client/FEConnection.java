@@ -10,12 +10,11 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
 import both.Message;
+import both.Worker;
 
 /**
  *
@@ -48,7 +47,7 @@ public class FEConnection extends  Thread{
 				 e.printStackTrace();
 			 }
 			 if(!message.getMsgType()){//Operate the ack
-
+				message.worker.setAck();
 			 }
 			 else {//Operate the ordering
 			 	if(message.getID() == expected){//receive the expected one
@@ -84,7 +83,11 @@ public class FEConnection extends  Thread{
 		ObjectOutputStream object_output = null;
 		object_output = new ObjectOutputStream(outputStream);
 		object_output.writeObject(message);
-		if (message.getMsgType()) {
+		byte[] data = outputStream.toByteArray();
+		DatagramPacket sendPacket = new DatagramPacket(data, data.length, m_FEAddress, m_FEPort);
+		message.worker = new Worker(sendPacket,m_socket,false);
+		message.worker.start();
+		/*if (message.getMsgType()) {
 			new Thread(
 				new Runnable() {
 					public void run() {
@@ -108,7 +111,7 @@ public class FEConnection extends  Thread{
 						}
 					}
 				});
-		}
+		}*/
 	}
 
 	public int getExpected(){

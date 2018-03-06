@@ -12,7 +12,8 @@ public class Message implements Serializable {
 	private	final boolean mToPrimary;
 	private final InetAddress mClient;
 	private final int mPort;
-	private boolean confirmed = false;
+	//private boolean confirmed = false;
+	public Worker worker = null;
 
 
 	public Message(boolean messageType,int ID,String command,GObject parameter, boolean toPrimary, InetAddress lClient, int Port) {
@@ -26,9 +27,9 @@ public class Message implements Serializable {
 		mPort = Port;
 	}
 
-	public boolean getConfirmed(){
-		return confirmed;
-	}
+	//public boolean getConfirmed(){
+		//return confirmed;
+	//}
 
 	public boolean getMsgType(){
 		return msgType;

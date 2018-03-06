@@ -203,7 +203,6 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 	public void update(Graphics g) {
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 60, getSize().width, getSize().height - 60);
-
 		template.draw(g);
 
 		for (ListIterator<GObject> itr = objectList.listIterator(); itr.hasNext();) {

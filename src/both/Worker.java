@@ -16,6 +16,10 @@ public class Worker extends Thread{
 		this.mAck = acknowledgment;
 	}
 
+	public void setAck(){
+		mAck = true;
+	}
+
 	public void run() {
 		do{
 			try {
