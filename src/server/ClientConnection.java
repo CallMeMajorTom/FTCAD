@@ -60,7 +60,7 @@ public class ClientConnection extends Thread {
 		object_output.writeObject(message);
 		byte[] data = outputStream.toByteArray();
 		DatagramPacket sendPacket = new DatagramPacket(data, data.length, m_ClientAddress, m_ClientPort);
-		new Thread(new Worker(sendPacket, m_socket, message.getConfirmed())).start();
+		new Thread(new Worker(sendPacket, m_socket, message)).start();
 
 	}
 
