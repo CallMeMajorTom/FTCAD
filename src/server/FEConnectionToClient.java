@@ -75,32 +75,16 @@ public class FEConnectionToClient extends Thread {
 		//produce for server to consume
 		mCEM++;
 		//search receivedmessages for next expected one if found call it with this function
-		if (searchExpected()) produceExpected(getExpected());
-		
-	}
-
-	private boolean searchExpected() {
-		// TODO Auto-generated method stub
-		for(Iterator<Message> i = mReceivedMessages.iterator(); i.hasNext();  ) {
-			Message msg = i.next();
-			if(mCEM == msg.getID()) return true;
-		}
-		return false;
+		try {produceExpected(searchMsgListById(mReceivedMessages, mCEM));} catch (Exception e) {}
 	}
 	
-	private Message searchMsgListById(ArrayList<Message> msgs, int id) {
+	private Message searchMsgListById(ArrayList<Message> msgs, int id) throws Exception{
 		// TODO Auto-generated method stub
 		for(Iterator<Message> i = mReceivedMessages.iterator(); i.hasNext();  ) {
 			Message msg = i.next();
-			if(mCEM == msg.getID()) return true;
+			if(mCEM == msg.getID()) return msg;
 		}
-		return false;
-	}
-
-
-	private Message getExpected() {
-		// TODO Auto-generated method stub
-		return null;
+		throw new Exception();
 	}
 
 	public void run() {
