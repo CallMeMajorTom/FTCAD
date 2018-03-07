@@ -22,6 +22,7 @@ public class FEConnectionToClient extends Thread {
 	private InetAddress mAddress = null;
 	private ArrayList<Message> mSentMessages = new ArrayList<Message>();
 	private ArrayList<Message> mReceivedMessages = new ArrayList<Message>();
+	private ArrayList<Message> mExpectedMessages = new ArrayList<Message>();
 	private int mCSM=1; //current sent message
 	private int mCEM=1; //current expected message
 	private boolean mAlive = true;
@@ -72,6 +73,7 @@ public class FEConnectionToClient extends Thread {
 	}
 	
 	private void produceExpected(Message message) {
+		mExpectedMessages.add(message);
 		//produce for server to consume
 		mCEM++;
 		//search receivedmessages for next expected one if found call it with this function

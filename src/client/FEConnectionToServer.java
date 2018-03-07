@@ -20,6 +20,7 @@ public class FEConnectionToServer extends  Thread{
 	private InetAddress m_FEAddress = null;
 	private LinkedList<Message> mReceivedList = new LinkedList<Message>();
 	private LinkedList<Message> mSendList = new LinkedList<Message>();
+	private ArrayList<Message> mExpectedMessages = new ArrayList<Message>();
 	private int m_FEPort = -1;
 	private int mCSM=1; //current sent message
 	private int mExpected = 1;//expected is the expected message ID to garantee order id
@@ -37,7 +38,11 @@ public class FEConnectionToServer extends  Thread{
 		 while(true){
 			message = receiveChatMessage();
 			if(message.getMsgType()){//we got a ack
-				message.setConfirmedAsTrue();
+				try {
+					searchMsgListById(mSendList, message.getID()).setConfirmedAsTrue();
+				} catch (Exception e) {
+					e.printStackTrace(); System.exit(-1);//cant happen or you didnt save whatever you sent. or a hacker
+				}
 			}
 			 else {//we got a send. Operate the ordering
 			 	if(message.getID() == mExpected){//receive the expected one
@@ -157,6 +162,7 @@ public class FEConnectionToServer extends  Thread{
 	}
 	
 	private void produceExpected(Message message) {
+		mExpectedMessages.add(message);
 		//produce for server to consume
 		mExpected++;
 		//search receivedmessages for next expected one if found call it with this function
