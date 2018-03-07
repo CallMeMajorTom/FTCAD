@@ -13,7 +13,7 @@ import java.util.ListIterator;
 import both.Message;
 import both.Worker;
 
-public class FEConnection extends  Thread{
+public class FEConnectionToServer extends  Thread{
 
 	private DatagramSocket m_socket = null;
 	private InetAddress m_FEAddress = null;
@@ -24,7 +24,7 @@ public class FEConnection extends  Thread{
 	private int mExpected = 1;//expected is the expected message ID to garantee order id
 	private int lock = 1;//lock means the element before lock is ordered
 
-	public FEConnection(String hostName, int port) throws SocketException, UnknownHostException {
+	public FEConnectionToServer(String hostName, int port) throws SocketException, UnknownHostException {
 		m_FEPort = port;
 		m_FEAddress = InetAddress.getByName(hostName);
 		m_socket = new DatagramSocket();

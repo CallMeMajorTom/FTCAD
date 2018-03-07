@@ -18,7 +18,7 @@ public class CadClient {
 	// globals fields
 	private LinkedList<GObject> ObejectList = new LinkedList<>();
 	static private GUI gui = null;
-	static FEConnection m_FEConnection = null;
+	static FEConnectionToServer m_FEConnection = null;
 	private int m_Port;
 	private InetAddress m_Address;
 	private final int FEPort;
@@ -49,7 +49,7 @@ public class CadClient {
 		}
 		FEPort = conf.getInt("databases.database(" + i + ").port");
 		FE_Address = conf.getString("databases.database(" + i + ").ip");
-		m_FEConnection = new FEConnection(FE_Address, FEPort);
+		m_FEConnection = new FEConnectionToServer(FE_Address, FEPort);
 		m_FEConnection.start();// Keep receive message
 		this.takeExpected();
 	}
@@ -87,7 +87,7 @@ public class CadClient {
 		return m_Port;
 	}
 
-	public FEConnection getM_FEConnection() {
+	public FEConnectionToServer getM_FEConnection() {
 		return m_FEConnection;
 	}
 
