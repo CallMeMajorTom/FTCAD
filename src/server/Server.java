@@ -15,7 +15,7 @@ import java.util.Iterator;
 import both.Message;
 
 public class Server {
-	private ArrayList<ClientConnection> mClientConnections = new ArrayList<ClientConnection>();//array list of Clients
+	private ArrayList<FEConnectionToClient> mClientConnections = new ArrayList<FEConnectionToClient>();//array list of Clients
 	private ArrayList<ReplicaConnection> mReplicaConnections = new ArrayList<ReplicaConnection>();
 	private ServerSocket mTSocket;
 	private DatagramSocket mUSocket;
@@ -107,7 +107,7 @@ public class Server {
 
 	public synchronized boolean addClient(String hostName, int port) throws SocketException, UnknownHostException {
 		InetAddress naddress = InetAddress.getByName(mAddress);
-		ClientConnection m_ClientConnection = new ClientConnection(naddress, port, mUSocket);
+		FEConnectionToClient m_ClientConnection = new FEConnectionToClient(naddress, port, mUSocket);
 		mClientConnections.add(m_ClientConnection);
 		ListenerThread receive_message = new ListenerThread(this, m_ClientConnection);
 		receive_message.start();
@@ -116,7 +116,7 @@ public class Server {
 	}
 
 	public synchronized void broadcast(Message message) throws IOException {
-		for (ClientConnection cc : mClientConnections) {
+		for (FEConnectionToClient cc : mClientConnections) {
 			cc.sendMessage(message);
 		}
 	}

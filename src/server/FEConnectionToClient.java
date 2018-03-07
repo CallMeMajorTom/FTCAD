@@ -14,7 +14,7 @@ import both.Worker;
 
 // responsible for sending messages, indirectly receiving messages, ordering, diffusion, 
 // acknowledge received messages
-public class ClientConnection extends Thread {
+public class FEConnectionToClient extends Thread {
 
 	private final DatagramSocket mSocket;
 	private final int mPort;
@@ -27,7 +27,7 @@ public class ClientConnection extends Thread {
 	private boolean mAlive = true;
 
 	// Constructor
-	public ClientConnection(InetAddress clientName, int ClientPort, DatagramSocket fesocket) {
+	public FEConnectionToClient(InetAddress clientName, int ClientPort, DatagramSocket fesocket) {
 		this.mAddress = clientName;
 		this.mPort = ClientPort;
 		this.mSocket = fesocket;
@@ -87,6 +87,16 @@ public class ClientConnection extends Thread {
 		}
 		return false;
 	}
+	
+	private Message searchMsgListById(ArrayList<Message> msgs, int id) {
+		// TODO Auto-generated method stub
+		for(Iterator<Message> i = mReceivedMessages.iterator(); i.hasNext();  ) {
+			Message msg = i.next();
+			if(mCEM == msg.getID()) return true;
+		}
+		return false;
+	}
+
 
 	private Message getExpected() {
 		// TODO Auto-generated method stub
