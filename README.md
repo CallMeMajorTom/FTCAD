@@ -15,3 +15,4 @@ goals:
       
       cadclient
       
+    make a parent class for feconnection and clientconnection and call it connection
