@@ -80,7 +80,7 @@ public class FEConnectionToClient extends Thread {
 	
 	private Message searchMsgListById(ArrayList<Message> msgs, int id) throws Exception{
 		// TODO Auto-generated method stub
-		for(Iterator<Message> i = mReceivedMessages.iterator(); i.hasNext();  ) {
+		for(Iterator<Message> i = msgs.iterator(); i.hasNext();  ) {
 			Message msg = i.next();
 			if(mCEM == msg.getID()) return msg;
 		}

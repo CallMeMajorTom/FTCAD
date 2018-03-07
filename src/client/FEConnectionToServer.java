@@ -6,6 +6,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -27,21 +28,18 @@ public class FEConnectionToServer extends  Thread{
 	public FEConnectionToServer(String hostName, int port) throws SocketException, UnknownHostException {
 		m_FEPort = port;
 		m_FEAddress = InetAddress.getByName(hostName);
-		m_socket = new DatagramSocket();
+		m_socket = new DatagramSocket(null);
+    	m_socket.connect(m_FEAddress, m_FEPort);
 	}
 
 	public void run(){//Keep receive message
 		Message message = null;
 		 while(true){
-			 try {
-				 message = receiveChatMessage();
-			 } catch (Exception e) {
-				 e.printStackTrace();System.exit(-1);
-			 } 
-			 if(!message.getMsgType()){//Operate the ack
+			message = receiveChatMessage();
+			if(message.getMsgType()){//we got a ack
 				message.setConfirmedAsTrue();
-			 }
-			 else {//Operate the ordering
+			}
+			 else {//we got a send. Operate the ordering
 			 	if(message.getID() == mExpected){//receive the expected one
 					mReceivedList.addFirst(message);
 					for ( ListIterator<Message> itr = mReceivedList.listIterator();itr.hasNext();){
@@ -61,12 +59,18 @@ public class FEConnectionToServer extends  Thread{
 		 }
 	}
 
-	public Message receiveChatMessage() throws IOException, ClassNotFoundException {
+	public Message receiveChatMessage(){
 		byte[] incomingData = new byte[256];
 		DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
 		ByteArrayInputStream byte_stream = new ByteArrayInputStream(incomingPacket.getData());
-		ObjectInputStream object_stream = new ObjectInputStream(byte_stream);
-		Message message = (Message) object_stream.readObject();
+		ObjectInputStream object_stream = null;
+		Message message = null;
+		try {
+			object_stream = new ObjectInputStream(byte_stream);
+			message = (Message) object_stream.readObject();
+		} catch (Exception e) {
+			e.printStackTrace(); System.exit(-1);//should not happen because dont know why it would happen. TODO investigate please!
+		}
 		return message;
 	}
 
@@ -156,20 +160,15 @@ public class FEConnectionToServer extends  Thread{
 		//produce for server to consume
 		mExpected++;
 		//search receivedmessages for next expected one if found call it with this function
-		if (searchExpected()) produceExpected(getExpectedMsg());
+		try {produceExpected(searchMsgListById(mReceivedList, mExpected));} catch (Exception e) {}
 	}
-
-	private boolean searchExpected() {
+	
+	private Message searchMsgListById(LinkedList<Message> msgs, int id) throws Exception{
 		// TODO Auto-generated method stub
-		for(Iterator<Message> i = mReceivedList.iterator(); i.hasNext();  ) {
+		for(Iterator<Message> i = msgs.iterator(); i.hasNext();  ) {
 			Message msg = i.next();
-			if(mExpected == msg.getID()) return true;
+			if(mExpected == msg.getID()) return msg;
 		}
-		return false;
-	}
-
-	private Message getExpectedMsg() {
-		// TODO Auto-generated method stub
-		return null;
+		throw new Exception();
 	}
 }
