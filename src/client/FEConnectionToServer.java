@@ -54,7 +54,6 @@ public class FEConnectionToServer extends  Thread{
 				}
 				else{//receive unexpected message. find the proper position and insert
 					ListIterator<Message> itr = mReceivedList.listIterator();
-					//ListIterator<Integer> cur = i2.listIterator();
 					while(true){
 						if(itr.hasNext()) {
 							if(itr.next().getID() > message.getID()) {
