@@ -1,0 +1,1 @@
+a sent message counts as lost if a ack isnt back before 50ms. if lost send again and wait for a ack. when you receive a ack confirm the coresponding sent msg.
