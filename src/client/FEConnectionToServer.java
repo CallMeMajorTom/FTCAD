@@ -24,7 +24,7 @@ public class FEConnectionToServer extends  Thread{
 	private int m_FEPort = -1;
 	private int mCSM=1; //current sent message
 	private int mExpected = 1;//expected is the expected message ID to garantee order id
-	private int lock = 1;//lock means the element before lock is ordered
+	private int mLock = 1;//lock means the element before lock is ordered
 
 	public FEConnectionToServer(String hostName, int port) throws SocketException, UnknownHostException {
 		m_FEPort = port;
@@ -35,33 +35,38 @@ public class FEConnectionToServer extends  Thread{
 
 	public void run(){//Keep receive message
 		Message message = null;
-		 while(true){
+		while(true){
 			message = receiveChatMessage();
 			if(message.getMsgType()){//we got a ack
 				try {
 					searchMsgListById(mSendList, message.getID()).setConfirmedAsTrue();
 				} catch (Exception e) {
-					e.printStackTrace(); System.exit(-1);//cant happen or you didnt save whatever you sent. or a hacker
+					e.printStackTrace(); System.exit(-1);//cant happen or you didnt save whatever you sent. or a hacker. TODO investigate please!
 				}
 			}
-			 else {//we got a send. Operate the ordering
-			 	if(message.getID() == mExpected){//receive the expected one
-					mReceivedList.addFirst(message);
+			else {//we got a send. Operate the ordering
+				if(message.getID() == mExpected){//receive the expected one
+					mReceivedList.add(mExpected-1, message);
 					for ( ListIterator<Message> itr = mReceivedList.listIterator();itr.hasNext();){
-						if(itr.next().getID() == lock) lock++;
+						if(itr.next().getID() == mExpected) mExpected++;
 						else break;
 					}
 				}
-				else{//receive unexpected message
+				else{//receive unexpected message. find the proper position and insert
 					ListIterator<Message> itr = mReceivedList.listIterator();
-					for ( ;itr.hasNext(););
-					while(itr.hasPrevious()){//find the proper position and insert
-						if(itr.next().getID() > message.getID()) continue;
-						else itr.add(message);
+					//ListIterator<Integer> cur = i2.listIterator();
+					while(true){
+						if(itr.hasNext()) {
+							if(itr.next().getID() > message.getID()) {
+								itr.previous(); 
+								itr.add(message); 
+								break;
+							}
+						} else {itr.add(message);break;}
 					}
 				}
-			 }
-		 }
+			}
+		}
 	}
 
 	public Message receiveChatMessage(){
@@ -123,7 +128,7 @@ public class FEConnectionToServer extends  Thread{
 	}
 
 	public int getLock(){
-		return lock;
+		return mLock;
 	}
 
 	public int increaseExpected(){
