@@ -6,52 +6,55 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.ListIterator;
+import java.util.concurrent.BlockingQueue;
 
 import both.Message;
 import both.Worker;
 
 public class FEConnectionToServer extends  Thread{
-
+	
+	private BlockingQueue<Message> mExpectedBQ = null;//use take() to consume msgs
 	private DatagramSocket m_socket = null;
 	private InetAddress m_FEAddress = null;
 	private LinkedList<Message> mReceivedList = new LinkedList<Message>();
 	private LinkedList<Message> mSendList = new LinkedList<Message>();
 	private int m_FEPort = -1;
-	private int mCSM=1; //current sent message
-	private int mExpected = 1;//expected is the expected message ID to garantee order id
-	private int mLock = 1;//lock means the element before lock is ordered
+	private int mExpected = 1;//expected is the expected message ID to garantee order id of the BQ
 
-	public FEConnectionToServer(String hostName, int port) throws SocketException, UnknownHostException {
+	public FEConnectionToServer(String hostName, int port, BlockingQueue<Message> ExpectedBQ) throws SocketException, UnknownHostException {
 		m_FEPort = port;
 		m_FEAddress = InetAddress.getByName(hostName);
 		m_socket = new DatagramSocket(null);
     	m_socket.connect(m_FEAddress, m_FEPort);
+    	mExpectedBQ = ExpectedBQ;
 	}
 
 	public void run(){//Keep receive message
 		Message message = null;
 		while(true){
 			message = receiveChatMessage();
-			if(receiveDiffusion(message)) {
-				if(message.getMsgType()){//we got a ack
-					try {searchMsgListById(mSendList, message.getID()).setConfirmedAsTrue();
-					} catch (Exception e) {e.printStackTrace(); System.exit(-1);}//cant happen or you didnt save whatever you sent. or a hacker. TODO investigate please!
+			if(message.getMsgType()){//we got a ack
+				try {searchMsgListById(mSendList, message.getID()).setConfirmedAsTrue();
+				} catch (Exception e) {e.printStackTrace(); System.exit(-1);}//cant happen or you didnt save whatever you sent. or a hacker. TODO investigate please!
+			}
+			else {//we got a send. Operate the ordering. send a acknowledge
+				try {
+					searchMsgListById(mSendList, message.getID());
+				} catch (Exception e) {
+					recordReceivedMessage(message);
 				}
-				else {//we got a send. Operate the ordering. send a acknowledge
-					recordMessage(message);
-					message.setMsgTypeAsTrue();
-					recordMessage(message);
-					sendChatMessage(message);
-				}
+				message.setMsgTypeAsTrue();
+				message.setConfirmedAsTrue();
+				sendChatMessage(message);
 			}
 		}
 	}
 	
 	public void sendChatMessage(Message message) {
+		mSendList.add(message);
+		//convert message to bytearray
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		ObjectOutputStream object_output = null;
 		try {
@@ -61,35 +64,9 @@ public class FEConnectionToServer extends  Thread{
 			e.printStackTrace(); System.exit(-1);
 		}
 		byte[] data = outputStream.toByteArray();
+		//send
 		DatagramPacket sendPacket = new DatagramPacket(data, data.length, m_FEAddress, m_FEPort);
 		new Thread(new Worker(sendPacket,m_socket,message)).start();
-	}
-	
-	public int getExpected(){
-		return mExpected;
-	}
-	
-	public Message consumeExpectedBlocking(){
-		return null;
-	}
-	
-	public int getLock(){
-		return mLock;
-	}
-	
-	public int increaseExpected(){
-		return mExpected++;
-	}
-	
-	public void removeFirst(){
-		mReceivedList.removeFirst();
-	}
-	
-	public Message getMsg(int ID){
-		for ( ListIterator<Message> itr = mReceivedList.listIterator();itr.hasNext();){
-			if(itr.next().getID() == ID) return itr.next();
-		}
-		return null;
 	}
 	
 	private Message receiveChatMessage(){
@@ -107,38 +84,28 @@ public class FEConnectionToServer extends  Thread{
 		return message;
 	}
 	
-	private boolean receiveDiffusion(Message msg) {
-		// if first time of this message returns true otherwise false
-		return true;
+	private void recordReceivedMessage(Message message) {
+		mReceivedList.add(message);
+		if(message.getID() == mExpected)//receive the expected one
+			produceExpected(message);
 	}
 	
-	private void recordMessage(Message message) {
-		mReceivedList.add(message);
-		if(message.getID() == mExpected){//receive the expected one
-			mReceivedList.add(mExpected-1, message);
-			for ( ListIterator<Message> itr = mReceivedList.listIterator();itr.hasNext();){
-				if(itr.next().getID() == mExpected) mExpected++;
-				else break;
-			}
+	private void produceExpected(Message message) {
+		try {
+			mExpectedBQ.put(message);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace(); System.exit(-1);//TODO why did this happen?
 		}
-		else{//receive unexpected message. find the proper position and insert
-			ListIterator<Message> itr = mReceivedList.listIterator();
-			while(true){
-				if(itr.hasNext()) {
-					if(itr.next().getID() > message.getID()) {
-						itr.previous(); 
-						itr.add(message); 
-						break;
-					}
-				} else {itr.add(message);break;}
-			}
-		}
+		//produce for server to consume
+		mExpected++;
+		//search receivedmessages for next expected one if found call it with this function
+		try {produceExpected(searchMsgListById(mReceivedList, mExpected));} catch (Exception e) {}
 	}
 	
 	private Message searchMsgListById(LinkedList<Message> msgs, int id) throws Exception{
 		for(Iterator<Message> i = msgs.iterator(); i.hasNext();  ) {
 			Message msg = i.next();
-			if(mExpected == msg.getID()) return msg;
+			if(id == msg.getID()) return msg;
 		}
 		throw new Exception();
 	}
