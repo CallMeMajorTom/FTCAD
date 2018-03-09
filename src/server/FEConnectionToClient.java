@@ -14,7 +14,7 @@ import both.Worker;
 
 // responsible for sending messages, indirectly receiving messages, ordering, diffusion, 
 // acknowledge received messages
-public class ClientConnection extends Thread {
+public class FEConnectionToClient extends Thread {
 
 	private final DatagramSocket mSocket;
 	private final int mPort;
@@ -22,12 +22,13 @@ public class ClientConnection extends Thread {
 	private InetAddress mAddress = null;
 	private ArrayList<Message> mSentMessages = new ArrayList<Message>();
 	private ArrayList<Message> mReceivedMessages = new ArrayList<Message>();
+	private ArrayList<Message> mExpectedMessages = new ArrayList<Message>();
 	private int mCSM=1; //current sent message
 	private int mCEM=1; //current expected message
 	private boolean mAlive = true;
 
 	// Constructor
-	public ClientConnection(InetAddress clientName, int ClientPort, DatagramSocket fesocket) {
+	public FEConnectionToClient(InetAddress clientName, int ClientPort, DatagramSocket fesocket) {
 		this.mAddress = clientName;
 		this.mPort = ClientPort;
 		this.mSocket = fesocket;
@@ -72,25 +73,20 @@ public class ClientConnection extends Thread {
 	}
 	
 	private void produceExpected(Message message) {
+		mExpectedMessages.add(message);
 		//produce for server to consume
 		mCEM++;
 		//search receivedmessages for next expected one if found call it with this function
-		if (searchExpected()) produceExpected(getExpected());
-		
+		try {produceExpected(searchMsgListById(mReceivedMessages, mCEM));} catch (Exception e) {}
 	}
-
-	private boolean searchExpected() {
+	
+	private Message searchMsgListById(ArrayList<Message> msgs, int id) throws Exception{
 		// TODO Auto-generated method stub
-		for(Iterator<Message> i = mReceivedMessages.iterator(); i.hasNext();  ) {
+		for(Iterator<Message> i = msgs.iterator(); i.hasNext();  ) {
 			Message msg = i.next();
-			if(mCEM == msg.getID()) return true;
+			if(mCEM == msg.getID()) return msg;
 		}
-		return false;
-	}
-
-	private Message getExpected() {
-		// TODO Auto-generated method stub
-		return null;
+		throw new Exception();
 	}
 
 	public void run() {

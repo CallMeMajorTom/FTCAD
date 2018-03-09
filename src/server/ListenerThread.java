@@ -9,10 +9,10 @@ import both.Message;
 //responsible for receiving messages from the client
 public class ListenerThread extends Thread {
 	Server server = null;
-	ClientConnection m_ClientConnection;
+	FEConnectionToClient m_ClientConnection;
 
 	// Construtor
-	public ListenerThread(Server server, ClientConnection m_ClientConnection) {
+	public ListenerThread(Server server, FEConnectionToClient m_ClientConnection) {
 		this.server = server;
 		this.m_ClientConnection = m_ClientConnection;
 	}
