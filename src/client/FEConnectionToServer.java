@@ -15,7 +15,7 @@ import both.Worker;
 
 public class FEConnectionToServer extends  Thread{
 	
-	private BlockingQueue<Message> mExpectedBQ = null;//use take() to consume msgs
+	protected BlockingQueue<Message> mExpectedBQ = null;//use take() to consume msgs
 	private DatagramSocket m_socket = null;
 	private InetAddress m_FEAddress = null;
 	private LinkedList<Message> mReceivedList = new LinkedList<Message>();
@@ -36,13 +36,16 @@ public class FEConnectionToServer extends  Thread{
 		while(true){
 			message = receiveChatMessage();
 			if(message.getMsgType()){//we got a ack
-				try {searchMsgListById(mSendList, message.getID()).setConfirmedAsTrue();
-				} catch (Exception e) {e.printStackTrace(); System.exit(-1);}//cant happen or you didnt save whatever you sent. or a hacker. TODO investigate please!
+				try {
+					searchMsgListById(mSendList, message.getID()).setConfirmedAsTrue();
+				} catch (Exception e) {
+					e.printStackTrace(); System.exit(-1);
+				}//cant happen or you didnt save whatever you sent. or a hacker. TODO investigate please!
 			}
 			else {//we got a send. Operate the ordering. send a acknowledge
-				try {
-					searchMsgListById(mSendList, message.getID());
-				} catch (Exception e) {
+				try {//search if we already have the message
+					searchMsgListById(mReceivedList, message.getID());
+				} catch (Exception e) {//didnt have the message
 					recordReceivedMessage(message);
 				}
 				message.setMsgTypeAsTrue();
@@ -98,8 +101,10 @@ public class FEConnectionToServer extends  Thread{
 		}
 		//produce for server to consume
 		mExpected++;
-		//search receivedmessages for next expected one if found call it with this function
-		try {produceExpected(searchMsgListById(mReceivedList, mExpected));} catch (Exception e) {}
+		//search received messages for next expected one if found call it with this function
+		try {
+			produceExpected(searchMsgListById(mReceivedList, mExpected));
+		} catch (Exception e) {}
 	}
 	
 	private Message searchMsgListById(LinkedList<Message> msgs, int id) throws Exception{

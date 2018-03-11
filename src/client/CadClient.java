@@ -13,6 +13,8 @@ import org.apache.commons.configuration.XMLConfiguration;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.LinkedList;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class CadClient {
 	// globals fields
@@ -24,6 +26,7 @@ public class CadClient {
 	private final int FEPort;
 	private final String FE_Address;
 	private int ID = 0;
+	private BlockingQueue<Message> mMsgList = new LinkedBlockingQueue<Message>();
 
 	public static void main(String[] args) throws IOException, ConfigurationException, ClassNotFoundException {
 		if (args.length < 1) {
@@ -49,30 +52,28 @@ public class CadClient {
 		}
 		FEPort = conf.getInt("databases.database(" + i + ").port");
 		FE_Address = conf.getString("databases.database(" + i + ").ip");
-		m_FEConnection = new FEConnectionToServer(FE_Address, FEPort);
+		m_FEConnection = new FEConnectionToServer(FE_Address, FEPort,mMsgList);
 		m_FEConnection.start();// Keep receive message
 		this.takeExpected();
 	}
 
+
 	private void takeExpected() throws IOException, ClassNotFoundException {
 		do {
-			while (m_FEConnection.getLock() > m_FEConnection.getExpected()) {
-				operate(m_FEConnection.getMsg(m_FEConnection.getExpected()));
-				m_FEConnection.removeFirst();
-				m_FEConnection.increaseExpected();
+			while(m_FEConnection.mExpectedBQ.size() != 0){
+				try {
+					operate(m_FEConnection.mExpectedBQ.take());
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 		} while (true);
 	}
 
-	// acknowledgements being sent if command acceptable
 	public void operate(Message message) throws IOException {
 		if (message.getCommand().equalsIgnoreCase("/draw")) {
-			Message ack = new Message(false, message.getID(), "/ack", null, true, m_Address, m_Port);
-			m_FEConnection.sendChatMessage(ack);
 			ObejectList.add(message.getObject());
 		} else if (message.getCommand().equalsIgnoreCase("/remove")) {
-			Message ack = new Message(false, message.getID(), "/ack", null, true, m_Address, m_Port);
-			m_FEConnection.sendChatMessage(ack);
 			ObejectList.removeLast();
 		}
 		gui.setObjectList(ObejectList);
