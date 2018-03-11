@@ -8,9 +8,14 @@ import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 
 public class Primary extends State{
+	
+	Server mServer = null;
 
-    private State update(){
-        return this;
+    protected State update(Server server){
+    	mServer = server;
+    	while(true) {
+    		
+    	}
     }
 
     private void listenForClientMessages() {
@@ -28,7 +33,7 @@ public class Primary extends State{
     }
 
     public synchronized void broadcast(Message message) throws IOException {
-        for (FEConnectionToClient cc : m_server.mFEConnectionToClients) {
+        for (FEConnectionToClient cc : mServer.mFEConnectionToClients) {
             cc.sendMessage(message);
         }
     }

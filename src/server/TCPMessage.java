@@ -2,6 +2,7 @@ package server;
 
 public class TCPMessage {
 
+	public static final String COORDINATOR = null;
 	String mmsg;
 	Object mobj;
 	boolean mconfirmed;

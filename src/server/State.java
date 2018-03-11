@@ -1,5 +1,5 @@
 package server;
 
-public class State {
-    protected Server m_server;
+public abstract class State {
+    abstract State update(Server server);
 }
