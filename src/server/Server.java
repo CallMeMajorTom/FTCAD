@@ -40,66 +40,86 @@ public class Server {
                 m_state = m_state.update();
             }
         }
-	    return null;
-	}
 
-	public static void main(String[] args) throws SocketException {
-		if (args.length < 2) {
-			System.err.println("Need both port and feport");
-			System.exit(-1);
+    public static void main(String[] args) throws SocketException {
+        if (args.length < 2) {
+            System.err.println("Need both port and feport");
+            System.exit(-1);
+        }
+        int Port = Integer.parseInt(args[0]);
+        int FEPort = Integer.parseInt(args[1]);
+        Server instance = new Server(Port, FEPort);
+        for(int i = 2; i < args.length; i++)
+            instance.addReplicas(Integer.parseInt(args[i]));
+        instance.init();
+    }
+
+    private Server(int Port, int FEPort){
+        mPort = Port;
+        mFEPort = FEPort;
+
+        try {
+            mTSocket = new ServerSocket(mPort);
+            mUSocket = new DatagramSocket(mPort);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Undetermined init_state = new Undetermined();
+        m_state = init_state;//the initial state is Undetermined state
+        StateMachine.start();//Start the statemachine
+    }
+
+	/*private Thread mTalker = new Thread () {
+		public void run() {
+			System.out.println("Talker running for " + mPort);
+			while (true) {
+				if (!isCoordinatorAlive()) {
+					holdElection();
+				}
+				try {
+					Thread.sleep(3000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
 		}
-		int Port = Integer.parseInt(args[0]);
-		int FEPort = Integer.parseInt(args[1]);
-		Server instance = new Server(Port, FEPort);
-		for (int i = 2; i < args.length; i++)
-			instance.addReplicas(Integer.parseInt(args[i]));
-		instance.init();
-	}
+	};*/
 
-	private Server(int Port, int FEPort) {
-		mPort = Port;
-		mFEPort = FEPort;
-
+	/*public void holdElection() {
+		System.out.println("P" + mPort + " starting an election");
+		holdingElection = true;
+		sendElectionMessageToPeers();
 		try {
-			mTSocket = new ServerSocket(mPort);
-			mUSocket = new DatagramSocket(mPort);
-		} catch (Exception e) {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		Undetermined init_state = new Undetermined();
-		m_state = init_state;// the initial state is Undetermined state
-		StateMachine.start();// Start the statemachine
-	}
+		//System.out.println(sockets);
+		for(ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator();itr.hasNext();) {
+			int port = itr.next().mPort;
+			if (port > mPort) {
+				synchronized (pendingElecResps) {
+					if (!pendingElecResps.containsKey(port)) {
+						return;
+					}
+				}
+			}
+		}
+		System.out.println("P" + mPort + " set itself as coordinator");
+		this.primary = mPort;
+		for(ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator();itr.hasNext();){//inform everyone that you are the coordinator
+			itr.next().sendMessage(Message.COORDINATOR);
+		}
+		holdingElection = false;
+	}*/
 
-	/*
-	 * private Thread mTalker = new Thread () { public void run() {
-	 * System.out.println("Talker running for " + mPort); while (true) { if
-	 * (!isCoordinatorAlive()) { holdElection(); } try { Thread.sleep(3000); }
-	 * catch (InterruptedException e) { e.printStackTrace(); } } } };
-	 */
-
-	/*
-	 * public void holdElection() { System.out.println("P" + mPort +
-	 * " starting an election"); holdingElection = true;
-	 * sendElectionMessageToPeers(); try { Thread.sleep(1000); } catch
-	 * (InterruptedException e) { e.printStackTrace(); }
-	 * //System.out.println(sockets); for(ListIterator<ReplicaConnection> itr =
-	 * mReplicaConnections.listIterator();itr.hasNext();) { int port =
-	 * itr.next().mPort; if (port > mPort) { synchronized (pendingElecResps) {
-	 * if (!pendingElecResps.containsKey(port)) { return; } } } }
-	 * System.out.println("P" + mPort + " set itself as coordinator");
-	 * this.primary = mPort; for(ListIterator<ReplicaConnection> itr =
-	 * mReplicaConnections.listIterator();itr.hasNext();){//inform everyone that
-	 * you are the coordinator itr.next().sendMessage(Message.COORDINATOR); }
-	 * holdingElection = false; }
-	 */
-
-	protected boolean isPrimaryAlive() {
+	protected boolean isPrimaryAlive(){
 		// System.out.println(id + " checking if the coordinator is alive");
 		if (Primary_Port == mPort) {
 			// if you are the coordinator, then you know you are alive
 			return true;
-		} else if (Primary_Port != -1) {
+		}
+		else if (Primary_Port != -1) {
 			// ping the coordinator
 			sendPingToPeer(Primary_Port);
 			// wait for its response
@@ -115,18 +135,15 @@ public class Server {
 				return false;
 			}
 			return true;
-		} else
-			return false;
+		}
+		else return false;
 	}
 
 	public void sendElectionMessageToPeers() {
-		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
+		for(ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator();itr.hasNext();) {
 			int port = itr.next().mPort;
-			if (port > mPort) {
-				itr.next().sendMessage(Message.ELECTION);// TODO:create a new
-															// message class for
-															// commnication
-															// between RM
+			if (port > mPort){
+				itr.next().sendMessage(Message.ELECTION);//TODO:create a new message class for commnication between RM
 				synchronized (pendingElecResps) {
 					pendingElecResps.put(port, false);
 				}
@@ -134,13 +151,12 @@ public class Server {
 		}
 	}
 
+
 	public void sendPingToPeer(int peerPort) {
-		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
+		for(ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator();itr.hasNext();){
 			ReplicaConnection peer = itr.next();
-			if (peer.mPort == peerPort)
-				peer.sendMessage(Message.PING);// TODO:create a new message
-												// class for commnication
-												// between RM
+			if(peer.mPort == peerPort)
+				peer.sendMessage(Message.PING);//TODO:create a new message class for commnication between RM
 		}
 		synchronized (pendingPings) {
 			pendingPings.put(peerPort, true);
@@ -148,43 +164,38 @@ public class Server {
 	}
 
 	public void receivePongMessage(Message m) {
-		// System.out.println("P"+id + " received pong from P" +
-		// m.getSourceId());
+		//System.out.println("P"+id + " received pong from P" + m.getSourceId());
 		synchronized (pendingPings) {
-			if (pendingPings.containsKey(m.getSourceId())) {// TODO:create a new
-															// message class for
-															// commnication
-															// between RM
-				pendingPings.remove(m.getSourceId());// TODO:create a new
-														// message class for
-														// commnication between
-														// RM
+			if (pendingPings.containsKey(m.getSourceId())) {//TODO:create a new message class for commnication between RM
+				pendingPings.remove(m.getSourceId());//TODO:create a new message class for commnication between RM
 			}
 		}
 	}
 
-	// TODO: Put it in Backup state
-	public void receiveElectionMessage(Message m) {
+
+	//TODO: Put it in Backup state
+	public void receiveElectionMessage (Message m) {
 		System.out.println("P" + mPort + " received election message from P" + m.getSourceId());
-		if (m.getSourceId() < mPort) {// Send ok if the sender cant bully you
+		if (m.getSourceId() < mPort) {//Send ok if the sender cant bully you
 			sendOkMessageToPeer(m.getSourceId());
 		}
 		if (!holdingElection) {
-			// start voting_state;
+			//start voting_state;
 		}
 	}
 
-	// Receive information from the new coordinator
-	/*
-	 * public void receiveCoordinatorMessage(Message m) { System.out.println("P"
-	 * + id + " received coordinator message from P" + m.getSourceId()); int
-	 * coord = (Integer) m.getData().get(0); this.coordinator = coord; }
+	/**
+	 * Receive information from the new coordinator
 	 */
+	/*public void receiveCoordinatorMessage(Message m) {
+		System.out.println("P" + id + " received coordinator message from P" + m.getSourceId());
+		int coord = (Integer) m.getData().get(0);
+		this.coordinator = coord;
+	}*/
 
-	Process a
-	message when
-	a peer
-	says okay
+	//Process a message when a peer says okay
+	
+
 
 	public void receiveOkMessage(Message m) {
 		System.out.println("P" + id + " received ok message from P" + m.getSourceId());
@@ -196,10 +207,9 @@ public class Server {
 
 	}
 
-	// Receive a ping and send a pong
+	//Receive a ping and send a pong
 	public void receivePingMessage(Message m) {
-		// System.out.println("P" + id + " received ping from P" +
-		// m.getSourceId());
+		//System.out.println("P" + id + " received ping from P" + m.getSourceId());
 		sendMessageToPeer(m.getSourceId(), Message.PONG, 0);
 	}
 
@@ -210,33 +220,36 @@ public class Server {
 		mReplicaConnections.add(rep);
 	}
 
-	/*
-	 * private int whoIsPrimary() { int winner = -1; ReplicaConnection c;
-	 * for(Iterator<ReplicaConnection> i = mReplicaConnections.iterator();
-	 * i.hasNext();) { c=i.next(); c.sendMessage("whoIsPrimary"); int r =
-	 * c.receiveMessage2(); if(-1!=r) {winner = r; break;} } return winner; }
-	 */
+
+/*	private int whoIsPrimary() {
+		int winner = -1;
+		ReplicaConnection c;
+		for(Iterator<ReplicaConnection> i = mReplicaConnections.iterator(); i.hasNext();) {
+			c=i.next();
+			c.sendMessage("whoIsPrimary");
+			int r = c.receiveMessage2();
+			if(-1!=r) {winner = r;	break;}
+		}
+		return winner;
+	}*/
 
 	private void listenForClientMessages() {
 		System.out.println("Waiting for client messages... ");
 		do {
 			byte[] incomingData = new byte[256];
 			DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
-			ByteArrayInputStream byte_stream = new ByteArrayInputStream(incomingPacket.getData());
+			ByteArrayInputStream byte_stream =new ByteArrayInputStream(incomingPacket.getData());
 			try {
 				ObjectInputStream object_stream = new ObjectInputStream(byte_stream);
-				Message message = (Message) object_stream.readObject();
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.exit(-1);
-			}
-		} while (true);
+				Message message = (Message)object_stream.readObject();
+			} catch (Exception e) {e.printStackTrace(); System.exit(-1);}
+		}
+		while(true);
 	}
 
 	public synchronized boolean addClient(String hostName, int port) throws SocketException, UnknownHostException {
 		InetAddress naddress = InetAddress.getByName(mAddress);
-		FEConnectionToClient m_FEConnectionToClient = new FEConnectionToClient(naddress, port, mUSocket);// TODO:Blockint
-																											// queue
+		FEConnectionToClient m_FEConnectionToClient = new FEConnectionToClient(naddress,port,mUSocket);//TODO:Blockint queue
 		mFEConnectionToClients.add(m_FEConnectionToClient);
 		ListenerThread receive_message = new ListenerThread(this, m_FEConnectionToClient);
 		receive_message.start();
@@ -250,18 +263,19 @@ public class Server {
 		}
 	}
 
-	synchronized public void controlRecieveMessage(ReplicaConnection replicaConnection, String m) {// TODO:
-		if (m.equals(Message.ELECTION)) {
-			receiveElectionMessage(m);
-		} else if (m.equals(Message.COORDINATOR))
+	synchronized public void controlRecieveMessage(ReplicaConnection replicaConnection, String m) {//TODO:
+		if(m.equals(Message.ELECTION))
+		{
+			receiveElectionMessage(m);}
+		else if(m.equals(Message.COORDINATOR))
 			receiveCoordinatorMessage(m);
-		else if (m.equals(Message.OK))
+		else if(m.equals(Message.OK))
 			receiveOkMessage(m);
-		else if (m.equals(Message.PING))
+		else if(m.equals(Message.PING))
 			receivePingMessage(m);
-		else if (m.equals(Message.PONG))
+		else if(m.equals(Message.PONG))
 			receivePongMessage(m);
-		else {
+		else{	
 			throw new RuntimeException("Unknown message type " + m);
 		}
 	}
