@@ -15,17 +15,19 @@ import both.Message;
 
 public class Server {
 
-    private State m_state;
-	protected ArrayList<FEConnectionToClient> mFEConnectionToClients = new ArrayList<FEConnectionToClient>();//array list of Clients
+	private State m_state;
+	protected ArrayList<FEConnectionToClient> mFEConnectionToClients = new ArrayList<FEConnectionToClient>();
+	// array list of Clients
+
 	protected ArrayList<ReplicaConnection> mReplicaConnections = new ArrayList<ReplicaConnection>();
 	private ServerSocket mTSocket;
 	private DatagramSocket mUSocket;
 
 	protected final int mPort;
-    private final int mFEPort;
+	private final int mFEPort;
 	private final String mAddress = "localhost";
 
-	protected int Primary_Port;//The port of the primary
+	protected int Primary_Port;// The port of the primary
 	protected boolean holdingElection;
 
 	protected Map<Integer, Boolean> pendingPings = new HashMap<Integer, Boolean>();
@@ -38,7 +40,6 @@ public class Server {
                 m_state = m_state.update();
             }
         }
-    }
 
     public static void main(String[] args) throws SocketException {
         if (args.length < 2) {
@@ -192,9 +193,8 @@ public class Server {
 		this.coordinator = coord;
 	}*/
 
-	/**
-	 * Process a message when a peer says okay
-	 */
+	//Process a message when a peer says okay
+	
 
 
 	public void receiveOkMessage(Message m) {
@@ -207,9 +207,7 @@ public class Server {
 
 	}
 
-	/**
-	 * Receive a ping and send a pong
-	 */
+	//Receive a ping and send a pong
 	public void receivePingMessage(Message m) {
 		//System.out.println("P" + id + " received ping from P" + m.getSourceId());
 		sendMessageToPeer(m.getSourceId(), Message.PONG, 0);
@@ -267,7 +265,8 @@ public class Server {
 
 	synchronized public void controlRecieveMessage(ReplicaConnection replicaConnection, String m) {//TODO:
 		if(m.equals(Message.ELECTION))
-			receiveElectionMessage(m);
+		{
+			receiveElectionMessage(m);}
 		else if(m.equals(Message.COORDINATOR))
 			receiveCoordinatorMessage(m);
 		else if(m.equals(Message.OK))
@@ -276,8 +275,8 @@ public class Server {
 			receivePingMessage(m);
 		else if(m.equals(Message.PONG))
 			receivePongMessage(m);
-		else
+		else{	
 			throw new RuntimeException("Unknown message type " + m);
+		}
 	}
-
 }
