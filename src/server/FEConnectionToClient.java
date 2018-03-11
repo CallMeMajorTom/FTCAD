@@ -8,6 +8,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.concurrent.BlockingQueue;
 
 import both.Message;
 import both.Worker;
@@ -15,23 +16,27 @@ import both.Worker;
 // responsible for sending messages, indirectly receiving messages, ordering, diffusion, 
 // acknowledge received messages
 public class FEConnectionToClient extends Thread {
-
+	
 	private final DatagramSocket mSocket;
 	private final int mPort;
-	
 	private InetAddress mAddress = null;
 	private ArrayList<Message> mSentMessages = new ArrayList<Message>();
 	private ArrayList<Message> mReceivedMessages = new ArrayList<Message>();
-	private ArrayList<Message> mExpectedMessages = new ArrayList<Message>();
+	private ArrayList<Message> mAcks = new ArrayList<Message>();
+	private BlockingQueue<Message> mExpectedBQ = null;
+	private int mExpected=1; //current expected message
 	private int mCSM=1; //current sent message
-	private int mCEM=1; //current expected message
 	private boolean mAlive = true;
 
-	// Constructor
-	public FEConnectionToClient(InetAddress clientName, int ClientPort, DatagramSocket fesocket) {
+	public FEConnectionToClient(InetAddress clientName, int ClientPort, DatagramSocket fesocket, BlockingQueue<Message> ExpectedBQ) {
 		this.mAddress = clientName;
 		this.mPort = ClientPort;
 		this.mSocket = fesocket;
+		mExpectedBQ = ExpectedBQ;
+	}
+	
+	public void run() {
+		while(mAlive ) {}
 	}
 
 	// send message to client
@@ -53,44 +58,59 @@ public class FEConnectionToClient extends Thread {
 	}
 	
 	public void receiveMessage(Message message){
-		if (receiveDiffusion()){
-			if(!message.getMsgType()) {//record and send acknowledge
+		if(message.getMsgType()){//ack type.
+			try {searchMsgListById(mSentMessages, message.getID()).setConfirmedAsTrue();
+			} catch (Exception e) {e.printStackTrace(); System.exit(-1);}//cant happen or you didnt save whatever you sent. or a hacker. TODO investigate please!
+		}
+		else {//send type. record message and save ack. Ack should be sent when sendAcks is called
+			try {
+				searchMsgListById(mSentMessages, message.getID());
+			} catch (Exception e) {
 				message.setMsgTypeAsTrue();
-				recordMessage(message);
-				sendMessage(message);
+				message.setConfirmedAsTrue();
+				recordReceivedMessage(message);
+			}
+			try {
+				searchMsgListById(mAcks, message.getID());
+			} catch (Exception e) {
+				message.setMsgTypeAsTrue();
+				message.setConfirmedAsTrue();
+				mAcks.add(message);
 			}
 		}
 	}
-
-	private boolean receiveDiffusion() {
-		// if first time of this message returns true otherwise false
-		return true;
+	
+	public void sendAcks(){
+		for(Iterator<Message> i = mAcks.iterator(); i.hasNext();  ) {
+			sendMessage(i.next());
+		}
+		mAcks = new ArrayList<Message>();
 	}
 
-	private void recordMessage(Message message) {
+	private void recordReceivedMessage(Message message) {
 		mReceivedMessages.add(message);
-		if(mCEM == message.getID()) produceExpected(message);
+		if(mExpected == message.getID()) produceExpected(message);
 	}
 	
 	private void produceExpected(Message message) {
-		mExpectedMessages.add(message);
+		try {
+			mExpectedBQ.put(message);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace(); System.exit(-1);//TODO why did this happen?
+		}
 		//produce for server to consume
-		mCEM++;
+		mExpected++;
 		//search receivedmessages for next expected one if found call it with this function
-		try {produceExpected(searchMsgListById(mReceivedMessages, mCEM));} catch (Exception e) {}
+		try {produceExpected(searchMsgListById(mReceivedMessages, mExpected));} catch (Exception e) {}
 	}
 	
 	private Message searchMsgListById(ArrayList<Message> msgs, int id) throws Exception{
 		// TODO Auto-generated method stub
 		for(Iterator<Message> i = msgs.iterator(); i.hasNext();  ) {
 			Message msg = i.next();
-			if(mCEM == msg.getID()) return msg;
+			if(mExpected == msg.getID()) return msg;
 		}
 		throw new Exception();
-	}
-
-	public void run() {
-		while(mAlive ) {}
 	}
 
 }
