@@ -14,19 +14,61 @@ import java.util.*;
 import both.Message;
 
 public class Server {
-	private ArrayList<FEConnectionToClient> mFEConnectionToClients = new ArrayList<FEConnectionToClient>();//array list of Clients
-	private ArrayList<ReplicaConnection> mReplicaConnections = new ArrayList<ReplicaConnection>();
+
+    private State m_state;
+	protected ArrayList<FEConnectionToClient> mFEConnectionToClients = new ArrayList<FEConnectionToClient>();//array list of Clients
+	protected ArrayList<ReplicaConnection> mReplicaConnections = new ArrayList<ReplicaConnection>();
 	private ServerSocket mTSocket;
 	private DatagramSocket mUSocket;
-	private final int mPort;
-	private final String mAddress = "localhost";
-	private boolean mPrimary;//To show if this process is primary server
-	private boolean holdingElection;
-	private int primary = -1;//The id of primary server
-	private Map<Integer, Boolean> pendingPings = new HashMap<Integer, Boolean>();//Waiting for the reply of the Ping
-	private Map<Integer, Boolean> pendingElecResps = new HashMap<Integer, Boolean>();//Waiting for the reply of the Election
 
-	private Thread mTalker = new Thread () {
+	protected final int mPort;
+    private final int mFEPort;
+	private final String mAddress = "localhost";
+
+	protected int Primary_Port;//The port of the primary
+	protected boolean holdingElection;
+
+	protected Map<Integer, Boolean> pendingPings = new HashMap<Integer, Boolean>();
+	protected Map<Integer, Boolean> pendingElecResps = new HashMap<Integer, Boolean>();
+
+	private Thread StateMachine = new Thread(){
+	    public void run(){
+            System.out.println("State machine running for " + mPort);
+            while(true){
+                m_state = m_state.update();
+            }
+        }
+    }
+
+    public static void main(String[] args) throws SocketException {
+        if (args.length < 2) {
+            System.err.println("Need both port and feport");
+            System.exit(-1);
+        }
+        int Port = Integer.parseInt(args[0]);
+        int FEPort = Integer.parseInt(args[1]);
+        Server instance = new Server(Port, FEPort);
+        for(int i = 2; i < args.length; i++)
+            instance.addReplicas(Integer.parseInt(args[i]));
+        instance.init();
+    }
+
+    private Server(int Port, int FEPort){
+        mPort = Port;
+        mFEPort = FEPort;
+
+        try {
+            mTSocket = new ServerSocket(mPort);
+            mUSocket = new DatagramSocket(mPort);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Undetermined init_state = new Undetermined();
+        m_state = init_state;//the initial state is Undetermined state
+        StateMachine.start();//Start the statemachine
+    }
+
+	/*private Thread mTalker = new Thread () {
 		public void run() {
 			System.out.println("Talker running for " + mPort);
 			while (true) {
@@ -39,12 +81,10 @@ public class Server {
 					e.printStackTrace();
 				}
 			}
-
 		}
+	};*/
 
-	};
-
-	public void holdElection() {
+	/*public void holdElection() {
 		System.out.println("P" + mPort + " starting an election");
 		holdingElection = true;
 		sendElectionMessageToPeers();
@@ -70,17 +110,17 @@ public class Server {
 			itr.next().sendMessage(Message.COORDINATOR);
 		}
 		holdingElection = false;
-	}
+	}*/
 
-	private boolean isCoordinatorAlive(){
+	protected boolean isPrimaryAlive(){
 		// System.out.println(id + " checking if the coordinator is alive");
-		if (primary == mPort) {
+		if (Primary_Port == mPort) {
 			// if you are the coordinator, then you know you are alive
 			return true;
 		}
-		else if (primary != -1) {
+		else if (Primary_Port != -1) {
 			// ping the coordinator
-			sendPingToPeer(primary);
+			sendPingToPeer(Primary_Port);
 			// wait for its response
 			try {
 				Thread.sleep(1000);
@@ -88,22 +128,21 @@ public class Server {
 				e.printStackTrace();
 			}
 			// if the coordinator did not reply with a pong, the its dead
-			if (pendingPings.containsKey(primary)) {
-				System.out.println("Old Coordinator " + primary + " died");
-				pendingPings.remove(primary);
+			if (pendingPings.containsKey(Primary_Port)) {
+				System.out.println("Old Coordinator " + Primary_Port + " died");
+				pendingPings.remove(Primary_Port);
 				return false;
 			}
 			return true;
 		}
-		primary = mPort;
-		return true;
+		else return false;
 	}
 
 	public void sendElectionMessageToPeers() {
 		for(ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator();itr.hasNext();) {
 			int port = itr.next().mPort;
 			if (port > mPort){
-				itr.next().sendMessage(Message.ELECTION);
+				itr.next().sendMessage(Message.ELECTION);//TODO:create a new message class for commnication between RM
 				synchronized (pendingElecResps) {
 					pendingElecResps.put(port, false);
 				}
@@ -116,36 +155,64 @@ public class Server {
 		for(ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator();itr.hasNext();){
 			ReplicaConnection peer = itr.next();
 			if(peer.mPort == peerPort)
-				peer.sendMessage(Message.PING);
+				peer.sendMessage(Message.PING);//TODO:create a new message class for commnication between RM
 		}
 		synchronized (pendingPings) {
 			pendingPings.put(peerPort, true);
 		}
 	}
 
-
-	public static void main(String[] args) throws SocketException {
-		if (args.length < 2) {
-			System.err.println("Need both port and feport");
-			System.exit(-1);
+	public void receivePongMessage(Message m) {
+		//System.out.println("P"+id + " received pong from P" + m.getSourceId());
+		synchronized (pendingPings) {
+			if (pendingPings.containsKey(m.getSourceId())) {//TODO:create a new message class for commnication between RM
+				pendingPings.remove(m.getSourceId());//TODO:create a new message class for commnication between RM
+			}
 		}
-		int Port = Integer.parseInt(args[0]);
-		int FEPort = Integer.parseInt(args[1]);
-		Server instance = new Server(Port, FEPort);
-		for(int i = 2; i < args.length; i++)
-			instance.addReplicas(Integer.parseInt(args[i]));
-		instance.init();
 	}
 
-	private Server(int Port, int FEPort){
-			mPort = Port;
-			mFEPort = FEPort;
-			try {
-				mTSocket = new ServerSocket(mPort);
-				mUSocket = new DatagramSocket(mPort);
-			} catch (IOException e) {e.printStackTrace(); System.exit(-1);}
-			mPrimary = false;
-			mTalker.start();
+
+	//TODO: Put it in Backup state
+	public void receiveElectionMessage (Message m) {
+		System.out.println("P" + mPort + " received election message from P" + m.getSourceId());
+		if (m.getSourceId() < mPort) {//Send ok if the sender cant bully you
+			sendOkMessageToPeer(m.getSourceId());
+		}
+		if (!holdingElection) {
+			//start voting_state;
+		}
+	}
+
+	/**
+	 * Receive information from the new coordinator
+	 */
+	/*public void receiveCoordinatorMessage(Message m) {
+		System.out.println("P" + id + " received coordinator message from P" + m.getSourceId());
+		int coord = (Integer) m.getData().get(0);
+		this.coordinator = coord;
+	}*/
+
+	/**
+	 * Process a message when a peer says okay
+	 */
+
+
+	public void receiveOkMessage(Message m) {
+		System.out.println("P" + id + " received ok message from P" + m.getSourceId());
+		synchronized (pendingElecResps) {
+			if (pendingElecResps.containsKey(m.getSourceId())) {
+				pendingElecResps.remove(m.getSourceId());
+			}
+		}
+
+	}
+
+	/**
+	 * Receive a ping and send a pong
+	 */
+	public void receivePingMessage(Message m) {
+		//System.out.println("P" + id + " received ping from P" + m.getSourceId());
+		sendMessageToPeer(m.getSourceId(), Message.PONG, 0);
 	}
 
 	private void addReplicas(int port) {
@@ -155,22 +222,8 @@ public class Server {
 		mReplicaConnections.add(rep);
 	}
 
-	private void init() {
-		do {
-			//if(-1 == whoIsPrimary()) election(); else join();
-			if(mPrimary)actAsPrimary(); else actAsBackup();
-		} while(true);
-	}
 
-	private void actAsBackup() {
-		//TODO
-	}
-
-	private void actAsPrimary() {
-		//TODO
-	}
-
-	private int whoIsPrimary() {
+/*	private int whoIsPrimary() {
 		int winner = -1;
 		ReplicaConnection c;
 		for(Iterator<ReplicaConnection> i = mReplicaConnections.iterator(); i.hasNext();) {
@@ -180,7 +233,7 @@ public class Server {
 			if(-1!=r) {winner = r;	break;}
 		}
 		return winner;
-	}
+	}*/
 
 	private void listenForClientMessages() {
 		System.out.println("Waiting for client messages... ");
@@ -198,21 +251,21 @@ public class Server {
 
 	public synchronized boolean addClient(String hostName, int port) throws SocketException, UnknownHostException {
 		InetAddress naddress = InetAddress.getByName(mAddress);
-		ClientConnection m_ClientConnection = new ClientConnection(naddress, port, mUSocket);
-		mClientConnections.add(m_ClientConnection);
-		ListenerThread receive_message = new ListenerThread(this, m_ClientConnection);
+		FEConnectionToClient m_FEConnectionToClient = new FEConnectionToClient(naddress,port,mUSocket);//TODO:Blockint queue
+		mFEConnectionToClients.add(m_FEConnectionToClient);
+		ListenerThread receive_message = new ListenerThread(this, m_FEConnectionToClient);
 		receive_message.start();
 		System.out.println("Client added");
 		return true;
 	}
 
 	public synchronized void broadcast(Message message) throws IOException {
-		for (ClientConnection cc : mClientConnections) {
+		for (FEConnectionToClient cc : mFEConnectionToClients) {
 			cc.sendMessage(message);
 		}
 	}
 
-	synchronized public void controlRecieveMessage(ReplicaConnection replicaConnection, String m) {
+	synchronized public void controlRecieveMessage(ReplicaConnection replicaConnection, String m) {//TODO:
 		if(m.equals(Message.ELECTION))
 			receiveElectionMessage(m);
 		else if(m.equals(Message.COORDINATOR))
