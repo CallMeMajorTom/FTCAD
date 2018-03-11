@@ -13,8 +13,13 @@ public class Primary extends State{
 
     protected State update(Server server){
     	mServer = server;
+		//write to primary file
+		//tell frontend to read
     	while(true) {
-    		
+    		//TODO take from blockingqueue.
+    		//TODO make a new message from it with a id
+    		//save message to list
+    		//TODO send message to every client
     	}
     }
 
@@ -32,7 +37,7 @@ public class Primary extends State{
         while(true);
     }
 
-    public synchronized void broadcast(Message message) throws IOException {
+    private synchronized void broadcast(Message message) throws IOException {
         for (FEConnectionToClient cc : mServer.mFEConnectionToClients) {
             cc.sendMessage(message);
         }
