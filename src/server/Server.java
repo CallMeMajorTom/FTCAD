@@ -14,13 +14,10 @@ import java.util.*;
 import both.Message;
 
 public class Server {
-
-	private ArrayList<ClientConnection> mClientConnections = new ArrayList<ClientConnection>();//array list of Clients
+	private ArrayList<FEConnectionToClient> mFEConnectionToClients = new ArrayList<FEConnectionToClient>();//array list of Clients
 	private ArrayList<ReplicaConnection> mReplicaConnections = new ArrayList<ReplicaConnection>();
 	private ServerSocket mTSocket;
 	private DatagramSocket mUSocket;
-	private DatagramPacket mToSend;
-	private final int mFEPort;
 	private final int mPort;
 	private final String mAddress = "localhost";
 	private boolean mPrimary;//To show if this process is primary server
@@ -229,7 +226,5 @@ public class Server {
 		else
 			throw new RuntimeException("Unknown message type " + m);
 	}
-
-
 
 }
