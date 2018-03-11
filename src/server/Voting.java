@@ -3,7 +3,7 @@ package server;
 import both.Message;
 
 import java.util.ListIterator;
-
+//
 public class Voting extends State{
 
     protected State update() {
