@@ -2,17 +2,19 @@ package both;
 
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.time.LocalDateTime;
 
 public class Message implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private boolean msgType;//false is send, true is acknowledge
+	private boolean mConfirmed = false;
 	private final int mID;
+	private LocalDateTime mTime = LocalDateTime.now();
 	private GObject mObject;
 	private String mCommand;
 	private	final boolean mToPrimary;
 	private final InetAddress mClient;
 	private final int mPort;
-	private boolean confirmed = false;
 
 	public Message(boolean messageType, int ID,String command, GObject parameter, 
 			boolean toPrimary, InetAddress lClient, int Port) {
@@ -27,11 +29,11 @@ public class Message implements Serializable {
 	}
 
 	synchronized public boolean getConfirmed(){
-		return confirmed;
+		return mConfirmed;
 	}
 	
 	synchronized public void setConfirmedAsTrue(){
-		confirmed = true;
+		mConfirmed = true;
 	}
 
 	public boolean getMsgType(){
@@ -40,6 +42,14 @@ public class Message implements Serializable {
 	
 	public void setMsgTypeAsTrue(){
 		msgType = true;
+	}
+	
+	public LocalDateTime getTime() {
+		return mTime;
+	}
+	
+	public void setTime() {//set to current time
+		mTime = LocalDateTime.now();
 	}
 
 	public GObject getObject() {

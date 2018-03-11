@@ -16,16 +16,14 @@ import both.Worker;
 // responsible for sending messages, indirectly receiving messages, ordering, diffusion, 
 // acknowledge received messages
 public class FEConnectionToClient extends Thread {
-	
-	private final DatagramSocket mSocket;
 	private final int mPort;
-	private InetAddress mAddress = null;
+	private final InetAddress mAddress;
+	private final DatagramSocket mSocket;
 	private ArrayList<Message> mSentMessages = new ArrayList<Message>();
 	private ArrayList<Message> mReceivedMessages = new ArrayList<Message>();
 	private ArrayList<Message> mAcks = new ArrayList<Message>();
 	private BlockingQueue<Message> mExpectedBQ = null;
 	private int mExpected=1; //current expected message
-	private int mCSM=1; //current sent message
 	private boolean mAlive = true;
 
 	public FEConnectionToClient(InetAddress clientName, int ClientPort, DatagramSocket fesocket, BlockingQueue<Message> ExpectedBQ) {
@@ -40,7 +38,7 @@ public class FEConnectionToClient extends Thread {
 	}
 
 	// send message to client
-	public void sendMessage(Message message){
+	synchronized public void sendMessage(Message message){
 		System.out.println("reply sent");
 		mSentMessages.add(message);
 		//convert message to bytearray
@@ -57,7 +55,7 @@ public class FEConnectionToClient extends Thread {
 		new Thread(new Worker(sendPacket, mSocket, message)).start();
 	}
 	
-	public void receiveMessage(Message message){
+	synchronized public void receiveMessage(Message message){
 		if(message.getMsgType()){//ack type.
 			try {searchMsgListById(mSentMessages, message.getID()).setConfirmedAsTrue();
 			} catch (Exception e) {e.printStackTrace(); System.exit(-1);}//cant happen or you didnt save whatever you sent. or a hacker. TODO investigate please!
@@ -80,11 +78,15 @@ public class FEConnectionToClient extends Thread {
 		}
 	}
 	
-	public void sendAcks(){
+	synchronized public void sendAcks(){
 		for(Iterator<Message> i = mAcks.iterator(); i.hasNext();  ) {
 			sendMessage(i.next());
 		}
 		mAcks = new ArrayList<Message>();
+	}
+	
+	public boolean compareClient(InetAddress address, int port) {
+		return mPort == port && mAddress.equals(address);
 	}
 
 	private void recordReceivedMessage(Message message) {

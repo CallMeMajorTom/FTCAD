@@ -49,29 +49,21 @@ public class FrontEnd {
     private void listenAndSend() {
         System.out.println("Waiting for handshake...!");
         do {
-        	//receive
-    		byte[] buf = new byte[256];
-    		DatagramPacket received = new DatagramPacket(buf, buf.length);
             try {
-            	mSocket.receive(received);
-            } catch (Exception e) {
-            	e.printStackTrace(); 
-            	System.exit(-1);
-            }
-            //convert to msg
-            byte[] incomingData = new byte[256];
-        	DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
-    		ByteArrayInputStream byte_stream = new ByteArrayInputStream(incomingPacket.getData());
-    		ObjectInputStream object_stream; 
-    		Message msg = null;
-    		try {
-    			object_stream = new ObjectInputStream(byte_stream);
-    			msg = (Message)object_stream.readObject();
-    		} catch (Exception e) {
-    			e.printStackTrace(); 
-    			System.exit(-1);
-    		}
-            if(!readPrimary(msg)) send(received, msg);//determine what to do with the msg
+	        	//listens and receives a packet from a socket
+	    		byte[] buf = new byte[256];
+	    		DatagramPacket received = new DatagramPacket(buf, buf.length);
+	            mSocket.receive(received);
+	            //convert buf to object. convert object to a msg.
+	    		ByteArrayInputStream byte_stream = new ByteArrayInputStream(buf);
+	    		ObjectInputStream object_stream = new ObjectInputStream(byte_stream);
+	    		Message msg = (Message)object_stream.readObject();
+	    		//determine what to do with the msg
+	            if(!readPrimary(msg)) send(received, msg);
+	    	} catch (Exception e) {
+	    		e.printStackTrace(); 
+	    		System.exit(-1);
+	    	}
         } while (true);
     }
     
@@ -88,9 +80,9 @@ public class FrontEnd {
 			conf = new XMLConfiguration("primary.xml");
 			return conf.getInt("port");
 		} catch (ConfigurationException e) {
-			System.err.println("primary file doesnt exist");System.exit(-1);//if primaryfile doesnt exist
+			System.err.println("primary file doesnt exist");//if primaryfile doesnt exist
 		} catch (ConversionException e) {
-			System.err.println("not a port");System.exit(-1);//if port doesnt exist
+			System.err.println("not a port");//if port doesnt exist
     	}
     	return 0;
     }
