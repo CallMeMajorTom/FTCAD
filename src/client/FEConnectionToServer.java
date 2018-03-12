@@ -32,9 +32,8 @@ public class FEConnectionToServer extends  Thread{
 	}
 
 	public void run(){//Keep receive message
-		Message message = null;
 		while(true){
-			message = receiveChatMessage();
+			Message message = receiveChatMessage();
 			if(message.getMsgType()){//we got a ack
 				try {
 					searchMsgListById(mSendList, message.getID()).setConfirmedAsTrue();
@@ -73,12 +72,13 @@ public class FEConnectionToServer extends  Thread{
 	}
 	
 	private Message receiveChatMessage(){
-		byte[] incomingData = new byte[256];
-		DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
-		ByteArrayInputStream byte_stream = new ByteArrayInputStream(incomingPacket.getData());
-		ObjectInputStream object_stream = null;
 		Message message = null;
 		try {
+			byte[] incomingData = new byte[256];
+			DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
+	        m_socket.receive(incomingPacket);
+			ByteArrayInputStream byte_stream = new ByteArrayInputStream(incomingPacket.getData());
+			ObjectInputStream object_stream = null;
 			object_stream = new ObjectInputStream(byte_stream);
 			message = (Message) object_stream.readObject();
 		} catch (Exception e) {

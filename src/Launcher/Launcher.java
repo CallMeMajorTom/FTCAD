@@ -5,8 +5,8 @@ import java.util.*;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.logging.*;
 
+import org.apache.commons.logging.*;
 import org.apache.commons.collections.*;
 import org.apache.commons.lang.*;
 
@@ -14,6 +14,7 @@ import java.lang.Process;
 import java.lang.ProcessBuilder;
 
 
+@SuppressWarnings("unused")
 public class Launcher{
 	private static ArrayList<Process> ProcessList = new ArrayList<Process>();
 	public static void main(String[] args) throws ConfigurationException, IOException{

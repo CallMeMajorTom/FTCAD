@@ -9,6 +9,7 @@ public class Message implements Serializable {
 	private boolean msgType;//false is send, true is acknowledge
 	private boolean mConfirmed = false;
 	private final int mID;
+	@SuppressWarnings("unused")
 	private LocalDateTime mTime = LocalDateTime.now();
 	private GObject mObject;
 	private String mCommand;
@@ -26,6 +27,17 @@ public class Message implements Serializable {
 		mToPrimary = toPrimary;
 		mClient = lClient;
 		mPort = Port;
+	}
+	
+	public Message(Message msg, int MsgID) {
+		super();
+		msgType = false;
+		mID = MsgID;
+		mObject = msg.getObject();
+		mCommand = msg.getCommand();
+		mToPrimary = false;
+		mClient = msg.getClient();
+		mPort = msg.getPort();
 	}
 
 	synchronized public boolean getConfirmed(){

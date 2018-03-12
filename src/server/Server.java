@@ -1,16 +1,11 @@
 package server;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import both.Message;
 
@@ -26,10 +21,12 @@ public class Server {
 	protected Map<Integer, Boolean> pendingPings = new HashMap<Integer, Boolean>();// The waiting list for the reply of PING message
 	protected Map<Integer, Boolean> pendingElecResps = new HashMap<Integer, Boolean>();// The waiting list for the reply of ELECTION message
 	protected ArrayList<Message> mMessageList = new ArrayList<Message>();//The list of the message, to record all operation
-	protected BlockingQueue<Message> mExpectedBQ = null;
+	protected BlockingQueue<Message> mExpectedBQ = new LinkedBlockingQueue<Message>();
+	protected int mMsgID = 1;
 	private ServerSocket mTSocket;// The Socket for communication between RM
 	private DatagramSocket mUSocket;// The Socket for communication between Server and Client
 	private State m_state;// The State, including : crashed, undetermined, voting, backup(no_integrated), backup(integrated), primary
+	@SuppressWarnings("unused")
 	private final int mFEPort;// The Port of the Frontend
 
 	private void StateMachine(){
@@ -243,6 +240,7 @@ public class Server {
 		}
 	}*/
 
+	@SuppressWarnings("unlikely-arg-type")
 	synchronized public void controlRecieveMessage(ReplicaConnection replicaConnection, RMmessage m) {// TODO:
 		if (m.equals(RMmessage.ELECTION)) {
 			receiveElectionMessage(m);

@@ -10,12 +10,9 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.io.Serializable;
 
-/**
- *
- * @author brom
- */
 public class GObject implements Serializable {
-    private Shape s;
+	private static final long serialVersionUID = 1L;
+	private Shape s;
     private Color c;
     private int x,y,width,height;
     // Note that the x and y coordinates are relative to the top left corner of the

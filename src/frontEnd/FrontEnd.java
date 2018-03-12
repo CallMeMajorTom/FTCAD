@@ -47,7 +47,6 @@ public class FrontEnd {
     }
 
     private void listenAndSend() {
-        System.out.println("Waiting for handshake...!");
         do {
             try {
 	        	//listens and receives a packet from a socket

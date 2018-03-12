@@ -1,11 +1,6 @@
 package server;
 
 import both.Message;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.net.DatagramPacket;
 import java.util.ArrayList;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -16,16 +11,26 @@ public class Primary extends State{
 	
 	Server mServer = null;
 
-    protected State update(Server server){
+    @SuppressWarnings("null")
+	protected State update(Server server){
     	mServer = server;
     	writeNtell();
     	while(true) {
-    		Thread.sleep(50);
+    		try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+				e.printStackTrace(); System.exit(-1);
+			}
     		stopProducing();
-    		ArrayList<Message> msgs;
+    		ArrayList<Message> msgs = new ArrayList<Message>();
     		for (int i = server.mExpectedBQ.size(); 0<i ;i--) {
-	    		Message msg = server.mExpectedBQ.take();
-	    		msg = new Message(msg, server.MsgID);
+	    		Message msg = null;
+				try {
+					msg = server.mExpectedBQ.take();
+				} catch (InterruptedException e) {
+					e.printStackTrace(); System.exit(-1);//TODO Why did this happen
+				}
+	    		msg = new Message(msg, server.mMsgID);
 	    		server.mMsgID++;
 	    		server.mMessageList.add(msg);
 	    		msgs.add(msg);
@@ -49,6 +54,7 @@ public class Primary extends State{
 		//TODO change port to this servers port with help  of conf
 	} 
 	
+	@SuppressWarnings("unused")
 	private int readfile() {
 		XMLConfiguration conf = null;
 		try {

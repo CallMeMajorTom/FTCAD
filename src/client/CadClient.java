@@ -29,14 +29,16 @@ public class CadClient {
 	private BlockingQueue<Message> mMsgList = new LinkedBlockingQueue<Message>();
 
 	public static void main(String[] args) throws IOException, ConfigurationException, ClassNotFoundException {
-		if (args.length < 1) {
+		if (args.length < 2) {
 			System.err.println("Usage: not enough arguments");
 			System.exit(-1);
 		}
 		// arguments become the address and port
 		InetAddress address = InetAddress.getByName(args[0]);
 		int m_port = Integer.parseInt(args[1]);
+		@SuppressWarnings("unused")
 		CadClient c = new CadClient(address, m_port);
+		c.takeExpected();
 	}
 
 	private CadClient(InetAddress m_address, int m_port)
@@ -50,11 +52,14 @@ public class CadClient {
 			if (conf.getString("databases.database(" + i + ").role").equals("frontend"))
 				break;
 		}
-		FEPort = conf.getInt("databases.database(" + i + ").port");
-		FE_Address = conf.getString("databases.database(" + i + ").ip");
+		//FEPort = conf.getInt("databases.database(" + i + ").port");
+		FEPort = 25050;
+		//FE_Address = conf.getString("databases.database(" + i + ").ip");
+		FE_Address = "localhost";
 		m_FEConnection = new FEConnectionToServer(FE_Address, FEPort,mMsgList);
-		m_FEConnection.start();// Keep receive message
-		this.takeExpected();
+		new Thread(m_FEConnection).start();// Keep receive message
+		gui = new GUI(800,600,this);
+		gui.addToListener();
 	}
 
 
@@ -64,17 +69,23 @@ public class CadClient {
 				try {
 					operate(m_FEConnection.mExpectedBQ.take());
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					e.printStackTrace();System.exit(-1);//TODO why
 				}
 			}
 		} while (true);
 	}
 
 	public void operate(Message message) throws IOException {
-		if (message.getCommand().equalsIgnoreCase("/draw")) {
-			ObejectList.add(message.getObject());
-		} else if (message.getCommand().equalsIgnoreCase("/remove")) {
-			ObejectList.removeLast();
+		switch(message.getCommand()) {
+			case "/draw":
+				ObejectList.add(message.getObject());
+				break;
+			case "/remove":
+				ObejectList.removeLast();
+				break;
+			default:
+				System.out.println("invalid command: "+message.getCommand());
+				break;
 		}
 		gui.setObjectList(ObejectList);
 	}

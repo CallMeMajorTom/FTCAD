@@ -41,6 +41,7 @@ public class ReplicaConnection extends Thread {
 		mAlive = true;
 	}
 
+	@SuppressWarnings("unused")
 	private void destructor() {
 		try {
 			mSocket.close();
@@ -106,7 +107,8 @@ public class ReplicaConnection extends Thread {
 			}
 			System.out.println("recieved: " + umsg);
 			// rpc
-			mServer.controlRecieveMessage(this, umsg);
+			RMmessage crm = new RMmessage(mPort, "");
+			mServer.controlRecieveMessage(this, crm);
 		}
 	}
 

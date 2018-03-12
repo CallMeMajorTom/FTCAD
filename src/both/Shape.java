@@ -8,6 +8,7 @@ package both;
 import java.io.Serializable;
 
 public final class Shape implements Serializable {
+	private static final long serialVersionUID = 1L;
 	private String type;
 
 	private Shape(String type) {
