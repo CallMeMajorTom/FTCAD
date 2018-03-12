@@ -27,7 +27,7 @@ public class FEConnectionToServer extends  Thread{
 		m_FEPort = port;
 		m_FEAddress = InetAddress.getByName(hostName);
 		m_socket = new DatagramSocket(null);
-    	m_socket.connect(m_FEAddress, m_FEPort);
+    	//m_socket.connect(m_FEAddress, m_FEPort);
     	mExpectedBQ = ExpectedBQ;
 	}
 
@@ -38,8 +38,8 @@ public class FEConnectionToServer extends  Thread{
 				try {
 					searchMsgListById(mSendList, message.getID()).setConfirmedAsTrue();
 				} catch (Exception e) {
-					e.printStackTrace(); System.exit(-1);
-				}//cant happen or you didnt save whatever you sent. or a hacker. TODO investigate please!
+					e.printStackTrace(); System.exit(-1);//cant happen or you didnt save whatever you sent. or a hacker. TODO investigate please!
+				}
 			}
 			else {//we got a send. Operate the ordering. send a acknowledge
 				try {//search if we already have the message
@@ -57,29 +57,27 @@ public class FEConnectionToServer extends  Thread{
 	public void sendChatMessage(Message message) {
 		mSendList.add(message);
 		//convert message to bytearray
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		ObjectOutputStream object_output = null;
 		try {
-			object_output = new ObjectOutputStream(outputStream);
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			ObjectOutputStream object_output = new ObjectOutputStream(outputStream);
 			object_output.writeObject(message);
+			byte[] data = outputStream.toByteArray();
+			//send
+			DatagramPacket sendPacket = new DatagramPacket(data, data.length, m_FEAddress, m_FEPort);
+			new Thread(new Worker(sendPacket,m_socket,message)).start();
 		} catch (IOException e) {
 			e.printStackTrace(); System.exit(-1);
 		}
-		byte[] data = outputStream.toByteArray();
-		//send
-		DatagramPacket sendPacket = new DatagramPacket(data, data.length, m_FEAddress, m_FEPort);
-		new Thread(new Worker(sendPacket,m_socket,message)).start();
 	}
 	
 	private Message receiveChatMessage(){
 		Message message = null;
 		try {
-			byte[] incomingData = new byte[256];
+			byte[] incomingData = new byte[256*4];
 			DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
 	        m_socket.receive(incomingPacket);
 			ByteArrayInputStream byte_stream = new ByteArrayInputStream(incomingPacket.getData());
-			ObjectInputStream object_stream = null;
-			object_stream = new ObjectInputStream(byte_stream);
+			ObjectInputStream object_stream  = new ObjectInputStream(byte_stream);
 			message = (Message) object_stream.readObject();
 		} catch (Exception e) {
 			e.printStackTrace(); System.exit(-1);//should not happen because dont know why it would happen. TODO investigate please!

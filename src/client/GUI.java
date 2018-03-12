@@ -96,6 +96,7 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 	}
 
 	public void windowClosed(WindowEvent e) {
+		System.exit(0);
 	}
 
 	public void windowClosing(WindowEvent e) {
@@ -127,18 +128,16 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 		if (e.getButton() == MouseEvent.BUTTON1) {
 			if (e.getX() > 0 && e.getY() > 91) {
 				current = new GObject(template.getShape(), template.getColor(), e.getX(), e.getY(), 0, 0);
-			} else
-				current = null;
+			} else current = null;
 		}
 		repaint();
 	}
 
 	public void mouseClicked(MouseEvent e) {
-		// User clicks the right mouse button:
-		// undo an operation by removing the most recently added object.
+		//Rightclick undoes an operation by removing the most recently added object.
 		if (e.getButton() == MouseEvent.BUTTON3 && objectList.size() > 0) {
 			int id = client.increaseID();
-			Message message = new Message(true,id,"/remove",null,true,client.getM_Address(),client.getM_Port());
+			Message message = new Message(true, id, "/remove", null, true, client.getM_Address(), client.getM_Port());
 			client.getM_FEConnection().sendChatMessage(message);
 		}
 		repaint();
@@ -147,7 +146,7 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 	public void mouseReleased(MouseEvent e) {
 		if (current != null) {
 			int id = client.increaseID();
-			Message message = new Message(true,id,"/draw",current,true,client.getM_Address(),client.getM_Port());
+			Message message = new Message(true, id, "/draw",current, true, client.getM_Address(), client.getM_Port());
 			client.getM_FEConnection().sendChatMessage(message);
 			current = null;
 		}
@@ -206,8 +205,7 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 	}
 
 	public void paint(Graphics g) {
-		super.paint(g); // The superclass (JFrame) paint function draws the GUI
-						// components.
+		super.paint(g); // The superclass (JFrame) paint function draws the GUI components.
 		update(g);
 	}
 }

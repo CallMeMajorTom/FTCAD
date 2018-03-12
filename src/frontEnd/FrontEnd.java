@@ -50,7 +50,7 @@ public class FrontEnd {
         do {
             try {
 	        	//listens and receives a packet from a socket
-	    		byte[] buf = new byte[256];
+	    		byte[] buf = new byte[256*4];
 	    		DatagramPacket received = new DatagramPacket(buf, buf.length);
 	            mSocket.receive(received);
 	            //convert buf to object. convert object to a msg.

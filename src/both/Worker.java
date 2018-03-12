@@ -5,7 +5,7 @@ import java.net.DatagramSocket;
 //handles the sending of server and client messages
 public class Worker extends Thread{
 	static double TRANSMISSION_FAILURE_RATE = 0.3;
-	private final int mDiffusion = 10;
+	private final int mDiffusion = 1;
 	private DatagramPacket mMessage = null;
 	private DatagramSocket mSocket = null;
 	private Message mAck;

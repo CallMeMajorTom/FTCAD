@@ -29,7 +29,7 @@ public class ListenerThread extends Thread {
 		while (true) {
             try {
 	        	//receive
-	    		byte[] buf = new byte[256];
+	    		byte[] buf = new byte[256*4];
 	    		DatagramPacket received = new DatagramPacket(buf, buf.length);
 	            mUSocket.receive(received);
 	            //convert to msg
