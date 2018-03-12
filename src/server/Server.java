@@ -15,36 +15,31 @@ import both.Message;
 
 public class Server {
 
-	private State m_state;
-	protected ArrayList<FEConnectionToClient> mFEConnectionToClients = new ArrayList<FEConnectionToClient>();
-	// array list of Clients
 
-	protected ArrayList<ReplicaConnection> mReplicaConnections = new ArrayList<ReplicaConnection>();
-	private ServerSocket mTSocket;
-	private DatagramSocket mUSocket;
-
-	protected final int mPort;
-	private final int mFEPort;
-	private final String mAddress = "localhost";
-
-	protected int Primary_Port;// The port of the primary
+	protected ArrayList<FEConnectionToClient> mFEConnectionToClients = new ArrayList<FEConnectionToClient>();//The array list of Clients
+	protected ArrayList<ReplicaConnection> mReplicaConnections = new ArrayList<ReplicaConnection>();// The array list of
+	protected int Primary_Port;// The port of the primary RM
 	protected boolean holdingElection;
+	protected final int mPort;// The port of THIS server
+	protected final String mAddress = "localhost";//The address of THIS server
+	protected Map<Integer, Boolean> pendingPings = new HashMap<Integer, Boolean>();// The waiting list for the reply of PING message
+	protected Map<Integer, Boolean> pendingElecResps = new HashMap<Integer, Boolean>();// The waiting list for the reply of ELECTION message
+	protected ArrayList<Message> mMessageList = new ArrayList<Message>();//The list of the message, to record all operation
+	private ServerSocket mTSocket;// The Socket for communication between RM
+	private DatagramSocket mUSocket;// The Socket for communication between Server and Client
+	private State m_state;// The State, including : crashed, undetermined, voting, backup(no_integrated), backup(integrated), primary
+	private final int mFEPort;// The Port of the Frontend
 
-	protected Map<Integer, Boolean> pendingPings = new HashMap<Integer, Boolean>();
-	protected Map<Integer, Boolean> pendingElecResps = new HashMap<Integer, Boolean>();
-
-	private Thread StateMachine = new Thread();
-
-	public void run() {
-		System.out.println("State machine running for " + mPort);
-		while (true) {
-			m_state = m_state.update();
-		}
+	private void StateMachine(){
+			System.out.println("State machine running for " + mPort);
+			while (true) {
+				m_state = m_state.update(this);
+			}
 	}
 
 	public static void main(String[] args) throws SocketException {
 		if (args.length < 2) {
-			System.err.println("Need both port and feport");
+			System.err.println("Need both port and FEport");
 			System.exit(-1);
 		}
 		int Port = Integer.parseInt(args[0]);
@@ -52,22 +47,19 @@ public class Server {
 		Server instance = new Server(Port, FEPort);
 		for (int i = 2; i < args.length; i++)
 			instance.addReplicas(Integer.parseInt(args[i]));
-		instance.init();
+		instance.StateMachine();
 	}
 
 	private Server(int Port, int FEPort) {
 		mPort = Port;
 		mFEPort = FEPort;
-
 		try {
 			mTSocket = new ServerSocket(mPort);
 			mUSocket = new DatagramSocket(mPort);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		Undetermined init_state = new Undetermined();
-		m_state = init_state;// the initial state is Undetermined state
-		StateMachine.start();// Start the statemachine
+		m_state = new Undetermined();// the initial state is Undetermined state
 	}
 
 	/*
@@ -122,10 +114,7 @@ public class Server {
 		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
 			int port = itr.next().mPort;
 			if (port > mPort) {
-				itr.next().sendMessage(Message.ELECTION);// TODO:create a new
-															// message class for
-															// commnication
-															// between RM
+				itr.next().sendMessage(RMmessage.ELECTION);
 				synchronized (pendingElecResps) {
 					pendingElecResps.put(port, false);
 				}
@@ -137,9 +126,7 @@ public class Server {
 		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
 			ReplicaConnection peer = itr.next();
 			if (peer.mPort == peerPort)
-				peer.sendMessage(Message.PING);// TODO:create a new message
-												// class for commnication
-												// between RM
+				peer.sendMessage(RMmessage.PING);
 		}
 		synchronized (pendingPings) {
 			pendingPings.put(peerPort, true);
@@ -249,15 +236,15 @@ public class Server {
 	}
 
 	synchronized public void controlRecieveMessage(ReplicaConnection replicaConnection, String m) {// TODO:
-		if (m.equals(Message.ELECTION)) {
+		if (m.equals(RMmessage.ELECTION)) {
 			receiveElectionMessage(m);
-		} else if (m.equals(Message.COORDINATOR))
+		} else if (m.equals(RMmessage.COORDINATOR))
 			receiveCoordinatorMessage(m);
-		else if (m.equals(Message.OK))
+		else if (m.equals(RMmessage.OK))
 			receiveOkMessage(m);
-		else if (m.equals(Message.PING))
+		else if (m.equals(RMmessage.PING))
 			receivePingMessage(m);
-		else if (m.equals(Message.PONG))
+		else if (m.equals(RMmessage.PONG))
 			receivePongMessage(m);
 		else {
 			throw new RuntimeException("Unknown message type " + m);

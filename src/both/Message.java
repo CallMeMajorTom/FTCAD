@@ -43,14 +43,6 @@ public class Message implements Serializable {
 	public void setMsgTypeAsTrue(){
 		msgType = true;
 	}
-	
-	public LocalDateTime getTime() {
-		return mTime;
-	}
-	
-	public void setTime() {//set to current time
-		mTime = LocalDateTime.now();
-	}
 
 	public GObject getObject() {
 		return mObject;
