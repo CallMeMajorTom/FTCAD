@@ -24,8 +24,8 @@ public class Primary extends State{
     		stopProducing();
     		ArrayList<Message> msgs;
     		for (int i = server.mExpectedBQ.size(); 0<i ;i--) {
-	    		Message msg = new server.mExpectedBQ.take();
-	    		msg = Message(msg, server.mID);
+	    		Message msg = server.mExpectedBQ.take();
+	    		msg = new Message(msg, server.MsgID);
 	    		server.mMsgID++;
 	    		server.mMessageList.add(msg);
 	    		msgs.add(msg);

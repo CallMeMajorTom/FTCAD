@@ -52,23 +52,11 @@ public class RMmessage implements Serializable {
     public void setSourcePort(int sourcePort) {
         this.sourcePort = sourcePort;
     }
-    public InetAddress getSourceAddr() {
-        return sourceAddr;
+    public int getDestinationPort() {
+        return destinationPort;
     }
-    public void setSourceAddr(InetAddress sourceAddr) {
-        this.sourceAddr = sourceAddr;
-    }
-    public int getSourceId() {
-        return sourceId;
-    }
-    public void setSourceId(int sourceId) {
-        this.sourceId = sourceId;
-    }
-    public int getDestinationId() {
-        return destinationId;
-    }
-    public void setDestinationId(int destinationId) {
-        this.destinationId = destinationId;
+    public void setDestinationPort(int destinationPort) {
+        this.destinationPort = destinationPort;
     }
     public int getType() {
         return type;
