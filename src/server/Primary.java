@@ -19,10 +19,15 @@ public class Primary extends State{
     	while(true) {
     		//updatedelay
     		//stop producing
-    		ArrayList<Message> msgs;
+    		ArrayList<Message> msgs = null;
     		for (int i = server.mExpectedBQ.size(); 0<i ;i--) {
-	    		Message msg = new server.mExpectedBQ.take();
-	    		msg = Message(msg, server.mID);
+				Message msg = null;
+				try {
+					msg = server.mExpectedBQ.take();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				msg = Message(msg, server.mID);
 	    		server.mID++;
 	    		server.mMessageList.add(msg);
 	    		msgs.add(msg);

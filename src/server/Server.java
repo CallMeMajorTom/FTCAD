@@ -10,6 +10,7 @@ import java.net.ServerSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
 
 import both.Message;
 
@@ -25,6 +26,7 @@ public class Server {
 	protected Map<Integer, Boolean> pendingPings = new HashMap<Integer, Boolean>();// The waiting list for the reply of PING message
 	protected Map<Integer, Boolean> pendingElecResps = new HashMap<Integer, Boolean>();// The waiting list for the reply of ELECTION message
 	protected ArrayList<Message> mMessageList = new ArrayList<Message>();//The list of the message, to record all operation
+	protected BlockingQueue<Message> mExpectedBQ = null;
 	private ServerSocket mTSocket;// The Socket for communication between RM
 	private DatagramSocket mUSocket;// The Socket for communication between Server and Client
 	private State m_state;// The State, including : crashed, undetermined, voting, backup(no_integrated), backup(integrated), primary
@@ -60,7 +62,26 @@ public class Server {
 			e.printStackTrace();
 		}
 		m_state = new Undetermined();// the initial state is Undetermined state
+		new ListenerThread(mFEConnectionToClients,mExpectedBQ,mUSocket).start();
 	}
+
+	private void addReplicas(int port) {
+		ReplicaConnection rep = new ReplicaConnection(port, this, mTSocket);
+		Thread thread = new Thread(rep);
+		thread.start();
+		mReplicaConnections.add(rep);
+	}
+
+	/*??????
+	public synchronized boolean addClient(String hostName, int port) throws SocketException, UnknownHostException {
+		InetAddress naddress = InetAddress.getByName(mAddress);
+		FEConnectionToClient m_FEConnectionToClient = new FEConnectionToClient(naddress, port, mUSocket,mExpectedBQ);// TODO:Blockingqueue
+		mFEConnectionToClients.add(m_FEConnectionToClient);
+		ListenerThread receive_message = new ListenerThread(mFEConnectionToClients,mExpectedBQ,mUSocket);
+		receive_message.start();
+		System.out.println("Client added");
+		return true;
+	}*/
 
 	/*
 	 * private Thread mTalker = new Thread () { public void run() {
@@ -133,32 +154,44 @@ public class Server {
 		}
 	}
 
-	public void receivePongMessage(Message m) {
-		// System.out.println("P"+id + " received pong from P" +
-		// m.getSourceId());
+	private void sendOkMessageToPeer(int sourcePort) {
+	}
+
+	private void sendMessageToPeer(int sourcePort, String pong, int i) {
+	}
+
+	public void receivePongMessage(RMmessage m) {
+		System.out.println("P"+mPort + " received pong from P" + m.getSourcePort());
 		synchronized (pendingPings) {
-			if (pendingPings.containsKey(m.getSourceId())) {// TODO:create a new
-															// message class for
-															// commnication
-															// between RM
-				pendingPings.remove(m.getSourceId());// TODO:create a new
-														// message class for
-														// commnication between
-														// RM
+			if (pendingPings.containsKey(m.getSourcePort())) {
+				pendingPings.remove(m.getSourcePort());
 			}
 		}
 	}
 
+	// Process a message when a peer says okay
+	public void receiveOkMessage(RMmessage m) {
+		System.out.println("P" + mPort + " received ok message from P" + m.getSourcePort());
+		synchronized (pendingElecResps) {
+			if (pendingElecResps.containsKey(m.getSourcePort())) {
+				pendingElecResps.remove(m.getSourcePort());
+			}
+		}
+
+	}
+
 	// TODO: Put it in Backup state
-	public void receiveElectionMessage(Message m) {
-		System.out.println("P" + mPort + " received election message from P" + m.getSourceId());
-		if (m.getSourceId() < mPort) {// Send ok if the sender cant bully you
-			sendOkMessageToPeer(m.getSourceId());
+	public void receiveElectionMessage(RMmessage m) {
+		System.out.println("P" + mPort + " received election message from P" + m.getSourcePort());
+		if (m.getSourcePort() < mPort) {// Send ok if the sender cant bully you
+			sendOkMessageToPeer(m.getSourcePort());
 		}
 		if (!holdingElection) {
 			// start voting_state;
 		}
 	}
+
+
 
 	/**
 	 * Receive information from the new coordinator
@@ -169,31 +202,17 @@ public class Server {
 	 * coord = (Integer) m.getData().get(0); this.coordinator = coord; }
 	 */
 
-	// Process a message when a peer says okay
-
-	public void receiveOkMessage(Message m) {
-		System.out.println("P" + id + " received ok message from P" + m.getSourceId());
-		synchronized (pendingElecResps) {
-			if (pendingElecResps.containsKey(m.getSourceId())) {
-				pendingElecResps.remove(m.getSourceId());
-			}
-		}
-
-	}
 
 	// Receive a ping and send a pong
-	public void receivePingMessage(Message m) {
+	public void receivePingMessage(RMmessage m) {
 		// System.out.println("P" + id + " received ping from P" +
 		// m.getSourceId());
-		sendMessageToPeer(m.getSourceId(), Message.PONG, 0);
+		sendMessageToPeer(m.getSourcePort(), RMmessage.PONG, 0);
 	}
 
-	private void addReplicas(int port) {
-		ReplicaConnection rep = new ReplicaConnection(port, this, mTSocket);
-		Thread thread = new Thread(rep);
-		thread.start();
-		mReplicaConnections.add(rep);
+	private void receiveCoordinatorMessage(RMmessage m) {
 	}
+
 
 	/*
 	 * private int whoIsPrimary() { int winner = -1; ReplicaConnection c;
@@ -202,7 +221,7 @@ public class Server {
 	 * c.receiveMessage2(); if(-1!=r) {winner = r; break;} } return winner; }
 	 */
 
-	private void listenForClientMessages() {
+	/*private void listenForClientMessages() {
 		System.out.println("Waiting for client messages... ");
 		do {
 			byte[] incomingData = new byte[256];
@@ -216,26 +235,15 @@ public class Server {
 				System.exit(-1);
 			}
 		} while (true);
-	}
+	}*/
 
-	public synchronized boolean addClient(String hostName, int port) throws SocketException, UnknownHostException {
-		InetAddress naddress = InetAddress.getByName(mAddress);
-		FEConnectionToClient m_FEConnectionToClient = new FEConnectionToClient(naddress, port, mUSocket);// TODO:Blockint
-																											// queue
-		mFEConnectionToClients.add(m_FEConnectionToClient);
-		ListenerThread receive_message = new ListenerThread(this, m_FEConnectionToClient);
-		receive_message.start();
-		System.out.println("Client added");
-		return true;
-	}
-
-	public synchronized void broadcast(Message message) throws IOException {
+	/*public synchronized void broadcast(Message message) throws IOException {
 		for (FEConnectionToClient cc : mFEConnectionToClients) {
 			cc.sendMessage(message);
 		}
-	}
+	}*/
 
-	synchronized public void controlRecieveMessage(ReplicaConnection replicaConnection, String m) {// TODO:
+	synchronized public void controlRecieveMessage(ReplicaConnection replicaConnection, RMmessage m) {// TODO:
 		if (m.equals(RMmessage.ELECTION)) {
 			receiveElectionMessage(m);
 		} else if (m.equals(RMmessage.COORDINATOR))
@@ -250,4 +258,6 @@ public class Server {
 			throw new RuntimeException("Unknown message type " + m);
 		}
 	}
+
+
 }
