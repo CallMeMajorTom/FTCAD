@@ -52,6 +52,7 @@ public class ListenerThread extends Thread {
 					ctc = new FEConnectionToClient(msg.getClient(), msg.getPort(), mUSocket, mClientMsgs);
 					mClientConnections.add(ctc);
 				}
+				//give the connectiontoclient the message gotten so he can produce expected or save it
 				ctc.receiveMessage(msg);
 			} catch (Exception e) {
 					e.printStackTrace();
