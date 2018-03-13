@@ -1,8 +1,10 @@
 package frontEnd;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -16,6 +18,7 @@ public class FrontEnd {
     private DatagramSocket mSocket;
 	public final InetAddress mPrimaryAddress;
 	public int mPrimaryPort=-1;
+	private DatagramSocket mSocket2;
 
     public static void main(String[] args) {//starts constructor and do a handshake
         if (args.length < 1) {
@@ -36,6 +39,7 @@ public class FrontEnd {
     	InetAddress pa = null;
     	try {
     		mSocket = new DatagramSocket(portNumber);
+    		mSocket2 = new DatagramSocket(null);
 			pa = InetAddress.getByName("localhost");
     	} catch (Exception e) {
     		e.printStackTrace(); 
@@ -43,7 +47,8 @@ public class FrontEnd {
     	}
     	mPrimaryAddress = pa;
     	mPrimaryPort = readfile();//for testing only
-		System.out.println(mPrimaryPort);
+		System.out.println("Primary port: "+mPrimaryPort);
+		System.out.println("mUSocket port: "+mSocket.getLocalPort());
     }
 
     private void listenAndSend() {
@@ -58,7 +63,8 @@ public class FrontEnd {
 	    		ObjectInputStream object_stream = new ObjectInputStream(byte_stream);
 	    		Message msg = (Message)object_stream.readObject();
 	    		//determine what to do with the msg
-	            if(!readPrimary(msg)) send(received, msg);
+	    		//System.err.println(received.getPort()+", "+msg.getID());
+	            if(!readPrimary(msg)) send(msg);
 	    	} catch (Exception e) {
 	    		e.printStackTrace(); 
 	    		System.exit(-1);
@@ -86,25 +92,26 @@ public class FrontEnd {
     	return 0;
     }
     
-    private void send(DatagramPacket received, Message msg) {
-		if(msg.getToPrimary()) {//send to primary
-			if(mPrimaryPort!=-1) {
-				received.setAddress(mPrimaryAddress);
-				received.setPort(mPrimaryPort);
-				try {
-					mSocket.send(received);
-				} catch (IOException e) {
-					e.printStackTrace(); System.exit(-1);
-				}
+    private void send(Message msg) {
+		try {
+	    	int sendPort;
+	    	InetAddress sendAddress;
+			if(msg.getToPrimary()) {//send to primary
+				sendAddress = mPrimaryAddress;
+				sendPort = mPrimaryPort;
+			} else {//send to the address
+				sendAddress = msg.getClient();
+				sendPort = msg.getPort();
 			}
-		} else {//send to the address
-			received.setAddress(msg.getClient());
-			received.setPort(msg.getPort());
-			try {
-				mSocket.send(received);
-			} catch (IOException e) {
-				e.printStackTrace(); System.exit(-1);
-			}
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			ObjectOutputStream object_output = new ObjectOutputStream(outputStream);
+			object_output.writeObject(msg);
+			byte[] data = outputStream.toByteArray();
+			DatagramPacket sendPacket = new DatagramPacket(data, data.length, sendAddress, sendPort);
+			mSocket2.send(sendPacket);
+			//System.out.println("msg sent. port: "+sendPort);
+		} catch (IOException e) {
+			e.printStackTrace(); System.exit(-1);
 		}
     }
     

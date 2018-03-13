@@ -26,6 +26,7 @@ public class ListenerThread extends Thread {
 
 	// keep receving messages until the socket is closed
 	public void run() {
+		System.out.println("listener started. Port: "+mUSocket.getLocalPort());
 		while (true) {
             try {
 	        	//receive
@@ -36,7 +37,7 @@ public class ListenerThread extends Thread {
 	    		ByteArrayInputStream byte_stream = new ByteArrayInputStream(buf);
 	    		ObjectInputStream object_stream = new ObjectInputStream(byte_stream);
 	    		Message msg = (Message)object_stream.readObject();
-				System.out.println("message recevied" + msg);
+	    		System.out.println("message received: "+ received.getPort()+", "+msg.getID());
 	    		//check if client exist. if not create client
 				boolean addClient = false;
 				FEConnectionToClient ctc = null;
@@ -52,8 +53,9 @@ public class ListenerThread extends Thread {
 					ctc = new FEConnectionToClient(msg.getClient(), msg.getPort(), mUSocket, mClientMsgs);
 					mClientConnections.add(ctc);
 				}
-				//give the connectiontoclient the message gotten so he can produce expected or save it
+				//give connectiontoclient the message so he can produce expected or save it
 				ctc.receiveMessage(msg);
+	    		System.out.println("Message proccessed");
 			} catch (Exception e) {
 					e.printStackTrace();
 					System.exit(-1);

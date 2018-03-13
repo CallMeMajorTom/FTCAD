@@ -36,7 +36,6 @@ public class CadClient {
 		// arguments become the address and port
 		InetAddress address = InetAddress.getByName(args[0]);
 		int m_port = Integer.parseInt(args[1]);
-		@SuppressWarnings("unused")
 		CadClient c = new CadClient(address, m_port);
 		c.takeExpected();
 	}

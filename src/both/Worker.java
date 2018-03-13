@@ -26,6 +26,7 @@ public class Worker extends Thread{
 			} catch (Exception e) {
 				e.printStackTrace();System.exit(-1);
 			}
-		} while (!mAck.getConfirmed());
+		} //while (!mAck.getConfirmed());
+		while (false);
 	}
 }

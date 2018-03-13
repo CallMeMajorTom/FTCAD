@@ -2,7 +2,6 @@ package server;
 
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
-import java.net.SocketException;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -36,7 +35,7 @@ public class Server {
 			}
 	}
 
-	public static void main(String[] args) throws SocketException {
+	public static void main(String[] args) {
 		if (args.length < 2) {
 			System.err.println("Need both port and FEport");
 			System.exit(-1);
@@ -50,16 +49,18 @@ public class Server {
 	}
 
 	private Server(int Port, int FEPort) {
+		System.out.println("Port: "+Port);
 		mPort = Port;
 		mFEPort = FEPort;
 		try {
-			mTSocket = new ServerSocket(mPort);
+			mTSocket = new ServerSocket(25049);
 			mUSocket = new DatagramSocket(mPort);
 		} catch (Exception e) {
-			e.printStackTrace();
+			e.printStackTrace();System.exit(-1);
 		}
+		System.out.println("mUSocket port: "+mUSocket.getLocalPort());
 		m_state = new Undetermined();// the initial state is Undetermined state
-		new ListenerThread(mFEConnectionToClients,mExpectedBQ,mUSocket).start();
+		new Thread(new ListenerThread(mFEConnectionToClients,mExpectedBQ,mUSocket)).start();
 	}
 
 	private void addReplicas(int port) {

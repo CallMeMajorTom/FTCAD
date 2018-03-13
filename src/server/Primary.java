@@ -11,10 +11,10 @@ public class Primary extends State{
 	
 	Server mServer = null;
 
-    @SuppressWarnings("null")
 	protected State update(Server server){
     	mServer = server;
-    	writeNtell();
+    	//writeNtell();
+		System.out.println("primary state");
     	while(true) {
     		try {
 				Thread.sleep(50);
@@ -42,9 +42,9 @@ public class Primary extends State{
     	}
     }
     
+	@SuppressWarnings("unused")
 	private void writeNtell() {
 		//TODO write to primary file and tell frontend to read
-		@SuppressWarnings("unused")
 		XMLConfiguration conf = null;
 		try {
 			conf = new XMLConfiguration("primary.xml");

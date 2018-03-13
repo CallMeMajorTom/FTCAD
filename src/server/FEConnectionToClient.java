@@ -15,7 +15,7 @@ import both.Worker;
 
 // responsible for sending messages, indirectly receiving messages, ordering, diffusion, 
 // acknowledge received messages
-public class FEConnectionToClient extends Thread {
+public class FEConnectionToClient{
 	private final int mPort;
 	private final InetAddress mAddress;
 	private final DatagramSocket mSocket;
@@ -24,17 +24,12 @@ public class FEConnectionToClient extends Thread {
 	private ArrayList<Message> mAcks = new ArrayList<Message>();
 	private BlockingQueue<Message> mExpectedBQ = null;
 	private int mExpected=1; //current expected message
-	private boolean mAlive = true;
 
 	public FEConnectionToClient(InetAddress clientName, int ClientPort, DatagramSocket fesocket, BlockingQueue<Message> ExpectedBQ) {
 		this.mAddress = clientName;
 		this.mPort = ClientPort;
 		this.mSocket = fesocket;
 		mExpectedBQ = ExpectedBQ;
-	}
-	
-	public void run() {
-		while(mAlive ) {}
 	}
 
 	// send message to client
