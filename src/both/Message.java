@@ -13,7 +13,7 @@ public class Message implements Serializable {
 	private LocalDateTime mTime = LocalDateTime.now();
 	private GObject mObject;
 	private String mCommand;
-	private	final boolean mToPrimary;
+	private boolean mToPrimary;
 	private final InetAddress mClient;
 	private final int mPort;
 
@@ -66,6 +66,10 @@ public class Message implements Serializable {
 	
 	public boolean getToPrimary() {
 		return mToPrimary;
+	}
+	
+	public void setToPrimary(boolean bol) {
+		mToPrimary = bol;
 	}
 	
 	public InetAddress getClient() {

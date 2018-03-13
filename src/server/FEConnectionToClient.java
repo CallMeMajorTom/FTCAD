@@ -24,17 +24,26 @@ public class FEConnectionToClient{
 	private ArrayList<Message> mAcks = new ArrayList<Message>();
 	private BlockingQueue<Message> mExpectedBQ = null;
 	private int mExpected=1; //current expected message
+	private InetAddress mFEAddress;
+	private int mFEPort;
 
-	public FEConnectionToClient(InetAddress clientName, int ClientPort, DatagramSocket fesocket, BlockingQueue<Message> ExpectedBQ) {
+	public FEConnectionToClient(InetAddress clientName, int ClientPort, InetAddress feAddress, int fePort, 
+			DatagramSocket fesocket, BlockingQueue<Message> ExpectedBQ) {
 		this.mAddress = clientName;
 		this.mPort = ClientPort;
+		this.mFEAddress = feAddress;
+		this.mFEPort = fePort;
 		this.mSocket = fesocket;
 		mExpectedBQ = ExpectedBQ;
 	}
 
 	// send message to client
 	synchronized public void sendMessage(Message message){
-		System.out.println("reply sent");
+		System.out.println("reply start");
+		if (message.getToPrimary()) {
+			System.err.println("server trying to send to primary");
+			System.exit(-1);
+		} 
 		mSentMessages.add(message);
 		//convert message to bytearray
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -46,12 +55,14 @@ public class FEConnectionToClient{
 		}
 		byte[] data = outputStream.toByteArray();
 		//send
-		DatagramPacket sendPacket = new DatagramPacket(data, data.length, mAddress, mPort);
+		DatagramPacket sendPacket = new DatagramPacket(data, data.length, mFEAddress, mFEPort);
 		new Thread(new Worker(sendPacket, mSocket, message)).start();
+
+		System.out.println("reply sent. port: "+sendPacket.getPort());
 	}
 	
 	synchronized public void receiveMessage(Message message){
-		if(message.getMsgType()){//ack type.
+		if(!message.getMsgType()){//ack type.
 			try {searchMsgListById(mSentMessages, message.getID()).setConfirmedAsTrue();
 			} catch (Exception e) {e.printStackTrace(); System.exit(-1);}//cant happen or you didnt save whatever you sent. or a hacker. TODO investigate please!
 		}
@@ -61,6 +72,7 @@ public class FEConnectionToClient{
 			} catch (Exception e) {
 				message.setMsgTypeAsTrue();
 				message.setConfirmedAsTrue();
+				message.setToPrimary(true);
 				recordReceivedMessage(message);
 			}
 			try {
@@ -68,9 +80,11 @@ public class FEConnectionToClient{
 			} catch (Exception e) {
 				message.setMsgTypeAsTrue();
 				message.setConfirmedAsTrue();
+				message.setToPrimary(false);
 				mAcks.add(message);
 			}
 		}
+		System.out.println("ctc: message received");
 	}
 	
 	synchronized public void sendAcks(){

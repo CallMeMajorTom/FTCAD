@@ -18,7 +18,6 @@ public class FrontEnd {
     private DatagramSocket mSocket;
 	public final InetAddress mPrimaryAddress;
 	public int mPrimaryPort=-1;
-	private DatagramSocket mSocket2;
 
     public static void main(String[] args) {//starts constructor and do a handshake
         if (args.length < 1) {
@@ -39,7 +38,6 @@ public class FrontEnd {
     	InetAddress pa = null;
     	try {
     		mSocket = new DatagramSocket(portNumber);
-    		mSocket2 = new DatagramSocket(null);
 			pa = InetAddress.getByName("localhost");
     	} catch (Exception e) {
     		e.printStackTrace(); 
@@ -108,8 +106,8 @@ public class FrontEnd {
 			object_output.writeObject(msg);
 			byte[] data = outputStream.toByteArray();
 			DatagramPacket sendPacket = new DatagramPacket(data, data.length, sendAddress, sendPort);
-			mSocket2.send(sendPacket);
-			//System.out.println("msg sent. port: "+sendPort);
+			mSocket.send(sendPacket);
+			System.out.println("msg sent. port: "+sendPort);
 		} catch (IOException e) {
 			e.printStackTrace(); System.exit(-1);
 		}

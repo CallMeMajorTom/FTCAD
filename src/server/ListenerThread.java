@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
@@ -15,10 +16,14 @@ public class ListenerThread extends Thread {
 	private ArrayList<FEConnectionToClient> mClientConnections;
 	private BlockingQueue<Message> mClientMsgs;
 	private DatagramSocket mUSocket;
+	private int mFEPort;
+	private InetAddress mFEAddress;
 
 	// Construtor
 	public ListenerThread(ArrayList<FEConnectionToClient> clientConnections, BlockingQueue<Message> clientMsgs, 
-			DatagramSocket USocket) {
+			DatagramSocket USocket, InetAddress feAddress, int fePort) {
+		mFEPort = fePort;
+		mFEAddress = feAddress;
 		mClientConnections = clientConnections;
 		mClientMsgs = clientMsgs;
 		mUSocket = USocket;
@@ -32,7 +37,9 @@ public class ListenerThread extends Thread {
 	        	//receive
 	    		byte[] buf = new byte[256*4];
 	    		DatagramPacket received = new DatagramPacket(buf, buf.length);
+	    		System.out.println("about to receive");
 	            mUSocket.receive(received);
+	    		System.out.println("message received");
 	            //convert to msg
 	    		ByteArrayInputStream byte_stream = new ByteArrayInputStream(buf);
 	    		ObjectInputStream object_stream = new ObjectInputStream(byte_stream);
@@ -50,7 +57,7 @@ public class ListenerThread extends Thread {
 					}
 				}
 				if(!addClient) { 
-					ctc = new FEConnectionToClient(msg.getClient(), msg.getPort(), mUSocket, mClientMsgs);
+					ctc = new FEConnectionToClient(msg.getClient(), msg.getPort(), mFEAddress, mFEPort, mUSocket, mClientMsgs);
 					mClientConnections.add(ctc);
 				}
 				//give connectiontoclient the message so he can produce expected or save it

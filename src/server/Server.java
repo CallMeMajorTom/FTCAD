@@ -1,7 +1,9 @@
 package server;
 
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -17,6 +19,7 @@ public class Server {
 	protected boolean holdingElection;
 	protected final int mPort;// The port of THIS server
 	protected final String mAddress = "localhost";//The address of THIS server
+	protected InetAddress mFEAddress;
 	protected Map<Integer, Boolean> pendingPings = new HashMap<Integer, Boolean>();// The waiting list for the reply of PING message
 	protected Map<Integer, Boolean> pendingElecResps = new HashMap<Integer, Boolean>();// The waiting list for the reply of ELECTION message
 	protected ArrayList<Message> mMessageList = new ArrayList<Message>();//The list of the message, to record all operation
@@ -58,9 +61,14 @@ public class Server {
 		} catch (Exception e) {
 			e.printStackTrace();System.exit(-1);
 		}
+		try {
+			mFEAddress = InetAddress.getByName(mAddress);
+		} catch (UnknownHostException e) {
+			e.printStackTrace(); System.exit(-1);
+		}
 		System.out.println("mUSocket port: "+mUSocket.getLocalPort());
 		m_state = new Undetermined();// the initial state is Undetermined state
-		new Thread(new ListenerThread(mFEConnectionToClients,mExpectedBQ,mUSocket)).start();
+		new Thread(new ListenerThread(mFEConnectionToClients,mExpectedBQ,mUSocket, mFEAddress,mFEPort)).start();
 	}
 
 	private void addReplicas(int port) {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- configuration.xml -->
 <config>
-	<port>25021</port>
+	<port>25051</port>
 </config>

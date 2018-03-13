@@ -33,6 +33,7 @@ public class FEConnectionToServer extends  Thread{
 
 	public void run(){//Keep receive message
 		while(true){
+			System.out.println("run loop start");
 			Message message = receiveChatMessage();
 			if(message.getMsgType()){//we got a ack
 				try {
@@ -55,6 +56,10 @@ public class FEConnectionToServer extends  Thread{
 	}
 	
 	public void sendChatMessage(Message message) {
+		if (!message.getToPrimary()) {
+			System.err.println("Client trying to send to a client");
+			System.exit(-1);
+		} 
 		mSendList.add(message);
 		//convert message to bytearray
 		try {
@@ -65,6 +70,7 @@ public class FEConnectionToServer extends  Thread{
 			//send
 			DatagramPacket sendPacket = new DatagramPacket(data, data.length, m_FEAddress, m_FEPort);
 			new Thread(new Worker(sendPacket,m_socket,message)).start();
+			System.out.println("message sent");
 		} catch (IOException e) {
 			e.printStackTrace(); System.exit(-1);
 		}
@@ -82,6 +88,7 @@ public class FEConnectionToServer extends  Thread{
 		} catch (Exception e) {
 			e.printStackTrace(); System.exit(-1);//should not happen because dont know why it would happen. TODO investigate please!
 		}
+		System.out.println("Message received");
 		return message;
 	}
 	

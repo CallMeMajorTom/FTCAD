@@ -25,7 +25,7 @@ public class CadClient {
 	private InetAddress m_Address;
 	private final int FEPort;
 	private final String FE_Address;
-	private int ID = 0;
+	private int ID = 1;
 	private BlockingQueue<Message> mMsgList = new LinkedBlockingQueue<Message>();
 
 	public static void main(String[] args) throws IOException, ConfigurationException, ClassNotFoundException {
