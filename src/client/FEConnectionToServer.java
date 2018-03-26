@@ -57,7 +57,7 @@ public class FEConnectionToServer extends  Thread{
 	
 	public void sendChatMessage(Message message) {
 		if (!message.getToPrimary()) {
-			System.err.println("Client trying to send to a client");
+			System.err.println("This client trying to send to another client");
 			System.exit(-1);
 		} 
 		mSendList.add(message);
