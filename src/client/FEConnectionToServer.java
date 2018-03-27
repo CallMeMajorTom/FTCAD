@@ -40,7 +40,7 @@ public class FEConnectionToServer extends  Thread{
 				try {
 					searchMsgListById(mSendList, message.getID()).setConfirmedAsTrue();
 				} catch (Exception e) {
-					e.printStackTrace(); System.exit(-1);//cant happen or you didnt save whatever you sent. or a hacker. TODO investigate please!
+					e.printStackTrace(); System.exit(-1);//cant happen or you didnt save the message you sent. or a hacker. TODO investigate please!
 				}
 			}
 			else {//we got a send. Operate the ordering. send a acknowledge
@@ -59,7 +59,6 @@ public class FEConnectionToServer extends  Thread{
 	
 	public void sendChatMessage(Message message) {
 		message.setToPrimary(true);
-		mSendList.add(message);
 		//convert message to bytearray
 		try {
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -73,8 +72,8 @@ public class FEConnectionToServer extends  Thread{
 				System.out.println("ack sent");
 			}
 			else {
+				mSendList.add(message);
 				new Thread(new Worker(sendPacket,m_socket,message)).start();
-				System.out.println("message sent");
 			}
 		} catch (IOException e) {
 			e.printStackTrace(); System.exit(-1);

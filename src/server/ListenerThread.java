@@ -37,14 +37,12 @@ public class ListenerThread extends Thread {
 	        	//receive
 	    		byte[] buf = new byte[256*4];
 	    		DatagramPacket received = new DatagramPacket(buf, buf.length);
-	    		System.out.println("about to receive");
 	            mUSocket.receive(received);
-	    		System.out.println("message received");
 	            //convert to msg
 	    		ByteArrayInputStream byte_stream = new ByteArrayInputStream(buf);
 	    		ObjectInputStream object_stream = new ObjectInputStream(byte_stream);
 	    		Message msg = (Message)object_stream.readObject();
-	    		System.out.println("message received: "+ received.getPort()+", "+msg.getID());
+	    		System.out.println("packet received: "+ received.getPort()+", "+msg.getID());
 	    		//check if client exist. if not create client
 				boolean addClient = false;
 				FEConnectionToClient ctc = null;
@@ -62,7 +60,6 @@ public class ListenerThread extends Thread {
 				}
 				//give connectiontoclient the message so he can produce expected or save it
 				ctc.receiveMessage(msg);
-	    		System.out.println("Message proccessed");
 			} catch (Exception e) {
 					e.printStackTrace();
 					System.exit(-1);

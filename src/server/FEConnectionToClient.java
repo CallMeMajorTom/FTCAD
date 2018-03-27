@@ -39,9 +39,7 @@ public class FEConnectionToClient{
 
 	// send message to client
 	synchronized public void sendMessage(Message message){
-		System.out.println("send start");
 		message.setToPrimary(false);
-		mSentMessages.add(message);
 		//convert message to bytearray
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		try {
@@ -54,14 +52,17 @@ public class FEConnectionToClient{
 		//send
 		DatagramPacket sendPacket = new DatagramPacket(data, data.length, mFEAddress, mFEPort);
 		if(message.getMsgType()) {
-			System.err.println("trying to use wrong function to send acks");
-			System.exit(-1);
+			try {
+				mSocket.send(sendPacket);
+			} catch (IOException e) {
+				e.printStackTrace();System.exit(-1);
+			}
+			System.out.println("ack sent: "+sendPacket.getPort());
 		}
 		else {
+			mSentMessages.add(message);
 			new Thread(new Worker(sendPacket, mSocket, message)).start();
-			System.out.println("message sent");
 		}
-		System.out.println("sent. port: "+sendPacket.getPort());
 	}
 	
 	synchronized public void receiveMessage(Message message){
@@ -83,9 +84,7 @@ public class FEConnectionToClient{
 			try {
 				searchMsgListById(mAcks, message.getID());
 			} catch (Exception e) {
-				message.setMsgTypeAsTrue();
 				message.setConfirmedAsTrue();
-				message.setToPrimary(false);
 				mAcks.add(message);
 			}
 		}
@@ -93,7 +92,10 @@ public class FEConnectionToClient{
 	
 	synchronized public void sendAcks(){
 		for(Iterator<Message> i = mAcks.iterator(); i.hasNext();  ) {
-			sendMessage(i.next());
+			Message msg = i.next();
+			msg.setMsgTypeAsTrue();
+			msg.setToPrimary(false);
+			sendMessage(msg);
 		}
 		mAcks = new ArrayList<Message>();
 	}
