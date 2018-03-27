@@ -62,7 +62,7 @@ public class FrontEnd {
 	    		Message msg = (Message)object_stream.readObject();
 	    		//determine what to do with the msg
 	    		//System.err.println(received.getPort()+", "+msg.getID());
-	            if(!readPrimary(msg)) send(msg);
+	            if(!readPrimary(msg)) send(msg, received.getPort());
 	    	} catch (Exception e) {
 	    		e.printStackTrace(); 
 	    		System.exit(-1);
@@ -90,7 +90,7 @@ public class FrontEnd {
     	return 0;
     }
     
-    private void send(Message msg) {
+    private void send(Message msg, int fromPort) {
 		try {
 	    	int sendPort;
 	    	InetAddress sendAddress;
@@ -107,7 +107,7 @@ public class FrontEnd {
 			byte[] data = outputStream.toByteArray();
 			DatagramPacket sendPacket = new DatagramPacket(data, data.length, sendAddress, sendPort);
 			mSocket.send(sendPacket);
-			System.out.println("msg sent. port: "+sendPort);
+			System.out.println("msg from: "+fromPort+", to: "+sendPort);
 		} catch (IOException e) {
 			e.printStackTrace(); System.exit(-1);
 		}

@@ -27,7 +27,7 @@ public class FEConnectionToServer extends  Thread{
 		m_FEPort = port;
 		m_FEAddress = InetAddress.getByName(hostName);
 		m_socket = new DatagramSocket(null);
-    	//m_socket.connect(m_FEAddress, m_FEPort);
+    	m_socket.connect(m_FEAddress, m_FEPort);
     	mExpectedBQ = ExpectedBQ;
 	}
 
@@ -36,6 +36,7 @@ public class FEConnectionToServer extends  Thread{
 			System.out.println("run loop start");
 			Message message = receiveChatMessage();
 			if(message.getMsgType()){//we got a ack
+				System.out.println("ack received");
 				try {
 					searchMsgListById(mSendList, message.getID()).setConfirmedAsTrue();
 				} catch (Exception e) {
@@ -43,6 +44,7 @@ public class FEConnectionToServer extends  Thread{
 				}
 			}
 			else {//we got a send. Operate the ordering. send a acknowledge
+				System.out.println("message received");
 				try {//search if we already have the message
 					searchMsgListById(mReceivedList, message.getID());
 				} catch (Exception e) {//didnt have the message
@@ -56,10 +58,7 @@ public class FEConnectionToServer extends  Thread{
 	}
 	
 	public void sendChatMessage(Message message) {
-		if (!message.getToPrimary()) {
-			System.err.println("Client trying to send to a client");
-			System.exit(-1);
-		} 
+		message.setToPrimary(true);
 		mSendList.add(message);
 		//convert message to bytearray
 		try {
@@ -69,11 +68,21 @@ public class FEConnectionToServer extends  Thread{
 			byte[] data = outputStream.toByteArray();
 			//send
 			DatagramPacket sendPacket = new DatagramPacket(data, data.length, m_FEAddress, m_FEPort);
-			new Thread(new Worker(sendPacket,m_socket,message)).start();
-			System.out.println("message sent");
+			if(message.getMsgType()) {
+				m_socket.send(sendPacket);
+				System.out.println("ack sent");
+			}
+			else {
+				new Thread(new Worker(sendPacket,m_socket,message)).start();
+				System.out.println("message sent");
+			}
 		} catch (IOException e) {
 			e.printStackTrace(); System.exit(-1);
 		}
+	}
+	
+	public DatagramSocket getSocket() {
+		return m_socket;
 	}
 	
 	private Message receiveChatMessage(){
@@ -88,7 +97,6 @@ public class FEConnectionToServer extends  Thread{
 		} catch (Exception e) {
 			e.printStackTrace(); System.exit(-1);//should not happen because dont know why it would happen. TODO investigate please!
 		}
-		System.out.println("Message received");
 		return message;
 	}
 	

@@ -39,11 +39,8 @@ public class FEConnectionToClient{
 
 	// send message to client
 	synchronized public void sendMessage(Message message){
-		System.out.println("reply start");
-		if (message.getToPrimary()) {
-			System.err.println("server trying to send to primary");
-			System.exit(-1);
-		} 
+		System.out.println("send start");
+		message.setToPrimary(false);
 		mSentMessages.add(message);
 		//convert message to bytearray
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -56,17 +53,25 @@ public class FEConnectionToClient{
 		byte[] data = outputStream.toByteArray();
 		//send
 		DatagramPacket sendPacket = new DatagramPacket(data, data.length, mFEAddress, mFEPort);
-		new Thread(new Worker(sendPacket, mSocket, message)).start();
-
-		System.out.println("reply sent. port: "+sendPacket.getPort());
+		if(message.getMsgType()) {
+			System.err.println("trying to use wrong function to send acks");
+			System.exit(-1);
+		}
+		else {
+			new Thread(new Worker(sendPacket, mSocket, message)).start();
+			System.out.println("message sent");
+		}
+		System.out.println("sent. port: "+sendPacket.getPort());
 	}
 	
 	synchronized public void receiveMessage(Message message){
 		if(!message.getMsgType()){//ack type.
+			System.out.println("ctc: ack received");
 			try {searchMsgListById(mSentMessages, message.getID()).setConfirmedAsTrue();
 			} catch (Exception e) {e.printStackTrace(); System.exit(-1);}//cant happen or you didnt save whatever you sent. or a hacker. TODO investigate please!
 		}
 		else {//send type. record message and save ack. Ack should be sent when sendAcks is called
+			System.out.println("ctc: message received");
 			try {
 				searchMsgListById(mSentMessages, message.getID());
 			} catch (Exception e) {
@@ -84,7 +89,6 @@ public class FEConnectionToClient{
 				mAcks.add(message);
 			}
 		}
-		System.out.println("ctc: message received");
 	}
 	
 	synchronized public void sendAcks(){
