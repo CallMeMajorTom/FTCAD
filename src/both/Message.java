@@ -6,21 +6,21 @@ import java.time.LocalDateTime;
 
 public class Message implements Serializable {
 	private static final long serialVersionUID = 1L;
-	private boolean msgType;//false is send, true is acknowledge
+	private boolean msgType = false;//false is send, true is acknowledge
 	private boolean mConfirmed = false;
-	private final int mID;
 	@SuppressWarnings("unused")
 	private LocalDateTime mTime = LocalDateTime.now();
+	
+	private final int mID;
 	private GObject mObject;
 	private String mCommand;
 	private boolean mToPrimary;
 	private final InetAddress mClient;
 	private final int mPort;
 
-	public Message(boolean messageType, int ID,String command, GObject parameter, 
-			boolean toPrimary, InetAddress lClient, int Port) {
+	public Message(int ID, String command, GObject parameter, 
+			boolean toPrimary, InetAddress lClient, int Port) {//used for message
 		super();
-		msgType = messageType;
 		mID = ID;
 		mObject = parameter;
 		mCommand = command;
@@ -29,9 +29,8 @@ public class Message implements Serializable {
 		mPort = Port;
 	}
 	
-	public Message(Message msg, int MsgID) {
+	public Message(Message msg, int MsgID) {//used for server to reorder messages
 		super();
-		msgType = false;
 		mID = MsgID;
 		mObject = msg.getObject();
 		mCommand = msg.getCommand();

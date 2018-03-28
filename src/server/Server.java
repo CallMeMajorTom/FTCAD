@@ -12,7 +12,6 @@ import both.Message;
 
 public class Server {
 
-
 	protected ArrayList<FEConnectionToClient> mFEConnectionToClients = new ArrayList<FEConnectionToClient>();//The array list of Clients
 	protected ArrayList<ReplicaConnection> mReplicaConnections = new ArrayList<ReplicaConnection>();// The array list of
 	protected int Primary_Port;// The port of the primary RM

@@ -66,13 +66,20 @@ public class FEConnectionToClient{
 	}
 	
 	synchronized public void receiveMessage(Message message){
-		if(!message.getMsgType()){//ack type.
-			System.out.println("ctc: ack received");
+		if(message.getMsgType()){//ack type.
+			System.out.println("ack extracted from packet");
 			try {searchMsgListById(mSentMessages, message.getID()).setConfirmedAsTrue();
-			} catch (Exception e) {e.printStackTrace(); System.exit(-1);}//cant happen or you didnt save whatever you sent. or a hacker. TODO investigate please!
+			} catch (Exception e) {
+				System.out.println(message.getID());
+				for(Message each : mSentMessages) {
+					System.out.print(each.getID()+" ");
+				}
+				e.printStackTrace(); 
+				System.exit(-1);
+			}//cant happen or you didnt save whatever you sent. or a hacker. TODO investigate please!
 		}
 		else {//send type. record message and save ack. Ack should be sent when sendAcks is called
-			System.out.println("ctc: message received");
+			System.out.println("message extracted from packet");
 			try {
 				searchMsgListById(mSentMessages, message.getID());
 			} catch (Exception e) {
