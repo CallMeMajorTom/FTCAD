@@ -129,10 +129,9 @@ public class FEConnectionToClient{
 	}
 	
 	private Message searchMsgListById(ArrayList<Message> msgs, int id) throws Exception{
-		// TODO Auto-generated method stub
 		for(Iterator<Message> i = msgs.iterator(); i.hasNext();  ) {
 			Message msg = i.next();
-			if(mExpected == msg.getID()) return msg;
+			if(id == msg.getID()) return msg;
 		}
 		throw new Exception();
 	}

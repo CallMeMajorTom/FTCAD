@@ -125,30 +125,40 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 	}
 
 	public void mousePressed(MouseEvent e) {
-		if (e.getButton() == MouseEvent.BUTTON1) {
+		switch(e.getButton()) {
+		case MouseEvent.BUTTON1:
 			if (e.getX() > 0 && e.getY() > 91) {
 				current = new GObject(template.getShape(), template.getColor(), e.getX(), e.getY(), 0, 0);
 			} else current = null;
+			break;
+		case MouseEvent.BUTTON3:
+			//TODO
+			break;
 		}
 		repaint();
 	}
 
 	public void mouseClicked(MouseEvent e) {
-		//Rightclick undoes an operation by removing the most recently added object.
-		if (e.getButton() == MouseEvent.BUTTON3 && objectList.size() > 0) {
-			int id = client.increaseID();
-			Message message = new Message(id, "/remove", null, true, client.getM_Address(), client.getM_Port());
-			client.getM_FEConnection().sendChatMessage(message);
-		}
 		repaint();
 	}
 
 	public void mouseReleased(MouseEvent e) {
-		if (current != null) {
-			int id = client.increaseID();
-			Message message = new Message(id, "/draw",current, true, client.getM_Address(), client.getM_Port());
-			client.getM_FEConnection().sendChatMessage(message);
-			current = null;
+		switch (e.getButton()) {
+		case MouseEvent.BUTTON1:
+			if (current != null) {
+				int id = client.increaseID();
+				Message message = new Message(id, "/draw",current, true, client.getM_Address(), client.getM_Port());
+				client.getM_FEConnection().sendChatMessage(message);
+				current = null;
+			}
+			break;
+		case MouseEvent.BUTTON3://Rightclick undoes an operation by removing the most recently added object.
+			if (objectList.size() > 0) {
+				int id = client.increaseID();
+				Message message = new Message(id, "/remove", null, true, client.getM_Address(), client.getM_Port());
+				client.getM_FEConnection().sendChatMessage(message);
+			}
+			break;
 		}
 		repaint();
 	}
