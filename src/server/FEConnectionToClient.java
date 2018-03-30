@@ -15,7 +15,7 @@ import both.Worker;
 
 // responsible for sending messages, indirectly receiving messages, ordering, diffusion, 
 // acknowledge received messages
-public class FEConnectionToClient{
+public class FEConnectionToClient {
 	private final int mPort;
 	private final InetAddress mAddress;
 	private final DatagramSocket mSocket;
@@ -23,11 +23,15 @@ public class FEConnectionToClient{
 	private ArrayList<Message> mReceivedMessages = new ArrayList<Message>();
 	private ArrayList<Message> mAcks = new ArrayList<Message>();
 	private BlockingQueue<Message> mExpectedBQ = null;
-	private int mExpected=1; //current expected message
+	private int mExpected = 1; // current expected message
 	private InetAddress mFEAddress;
 	private int mFEPort;
+	private boolean hasCrashed = false;
+	long startTime;
+	long endTime;
+	long lengthTime;
 
-	public FEConnectionToClient(InetAddress clientName, int ClientPort, InetAddress feAddress, int fePort, 
+	public FEConnectionToClient(InetAddress clientName, int ClientPort, InetAddress feAddress, int fePort,
 			DatagramSocket fesocket, BlockingQueue<Message> ExpectedBQ) {
 		this.mAddress = clientName;
 		this.mPort = ClientPort;
@@ -38,54 +42,71 @@ public class FEConnectionToClient{
 	}
 
 	// send message to client
-	synchronized public void sendMessage(Message message){
+	synchronized public void sendMessage(Message message) {
+		startTime = System.currentTimeMillis();
+		System.out.println(startTime);
 		message.setToPrimary(false);
-		//convert message to bytearray
+		// convert message to bytearray
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		try {
 			ObjectOutputStream object_output = new ObjectOutputStream(outputStream);
 			object_output.writeObject(message);
 		} catch (IOException e) {
-			e.printStackTrace(); System.exit(-1);
+			e.printStackTrace();
+			System.exit(-1);
 		}
 		byte[] data = outputStream.toByteArray();
-		//send
+		// send
 		DatagramPacket sendPacket = new DatagramPacket(data, data.length, mFEAddress, mFEPort);
-		if(message.getMsgType()) {
+		if (message.getMsgType()) {
 			try {
 				mSocket.send(sendPacket);
 			} catch (IOException e) {
-				e.printStackTrace();System.exit(-1);
+				e.printStackTrace();
+				System.exit(-1);
 			}
-			System.out.println("ack sent: "+sendPacket.getPort());
-		}
-		else {
+			System.out.println("ack sent: " + sendPacket.getPort());
+		} else {
 			mSentMessages.add(message);
 			new Thread(new Worker(sendPacket, mSocket, message)).start();
 		}
+
+		long endTime = System.nanoTime();
+		System.out.println(endTime);
+		lengthTime = endTime - startTime;
 	}
+
 	/*
-	void runperiodically{
-		if timenow-lasttime>60{
-			assume client as crashed
+	 * void runperiodically(){ if (timenow-lasttime>60){ ///assume client as
+	 * crashed hasCrashed = true ;
+	 * 
+	 * } }
+	 */
+
+	synchronized public void receiveMessage(Message message) {
+		endTime = System.currentTimeMillis();
+		System.out.println(endTime);
+		long lengthTime = endTime - startTime;
+		if (lengthTime > 5000) {
+			System.out.println("Clinet has crashed \n System will exit");
+			System.exit(-1);
+
 		}
-	}*/
-	
-	synchronized public void receiveMessage(Message message){
-		//lasttime = timenow; 
-		if(message.getMsgType()){//ack type.
+		if (message.getMsgType()) {// ack type.
 			System.out.println("ack extracted from packet");
-			try {searchMsgListById(mSentMessages, message.getID()).setConfirmedAsTrue();
+			try {
+				searchMsgListById(mSentMessages, message.getID()).setConfirmedAsTrue();
 			} catch (Exception e) {
 				System.out.println(message.getID());
-				for(Message each : mSentMessages) {
-					System.out.print(each.getID()+" ");
+				for (Message each : mSentMessages) {
+					System.out.print(each.getID() + " ");
 				}
-				e.printStackTrace(); 
+				e.printStackTrace();
 				System.exit(-1);
-			}//cant happen or you didnt save whatever you sent. or a hacker. TODO investigate please!
-		}
-		else {//send type. record message and save ack. Ack should be sent when sendAcks is called
+			} // cant happen or you didnt save whatever you sent. or a hacker.
+				// TODO investigate please!
+		} else {// send type. record message and save ack. Ack should be sent
+				// when sendAcks is called
 			System.out.println("message extracted from packet");
 			try {
 				searchMsgListById(mSentMessages, message.getID());
@@ -103,9 +124,9 @@ public class FEConnectionToClient{
 			}
 		}
 	}
-	
-	synchronized public void sendAcks(){
-		for(Iterator<Message> i = mAcks.iterator(); i.hasNext();  ) {
+
+	synchronized public void sendAcks() {
+		for (Iterator<Message> i = mAcks.iterator(); i.hasNext();) {
 			Message msg = i.next();
 			msg.setMsgTypeAsTrue();
 			msg.setToPrimary(false);
@@ -113,32 +134,39 @@ public class FEConnectionToClient{
 		}
 		mAcks = new ArrayList<Message>();
 	}
-	
+
 	public boolean compareClient(InetAddress address, int port) {
 		return mPort == port && mAddress.equals(address);
 	}
 
 	private void recordReceivedMessage(Message message) {
 		mReceivedMessages.add(message);
-		if(mExpected == message.getID()) produceExpected(message);
+		if (mExpected == message.getID())
+			produceExpected(message);
 	}
-	
+
 	private void produceExpected(Message message) {
 		try {
 			mExpectedBQ.put(message);
 		} catch (InterruptedException e1) {
-			e1.printStackTrace(); System.exit(-1);//TODO why did this happen?
+			e1.printStackTrace();
+			System.exit(-1);// TODO why did this happen?
 		}
-		//produce for server to consume
+		// produce for server to consume
 		mExpected++;
-		//search receivedmessages for next expected one if found call it with this function
-		try {produceExpected(searchMsgListById(mReceivedMessages, mExpected));} catch (Exception e) {}
+		// search receivedmessages for next expected one if found call it with
+		// this function
+		try {
+			produceExpected(searchMsgListById(mReceivedMessages, mExpected));
+		} catch (Exception e) {
+		}
 	}
-	
-	private Message searchMsgListById(ArrayList<Message> msgs, int id) throws Exception{
-		for(Iterator<Message> i = msgs.iterator(); i.hasNext();  ) {
+
+	private Message searchMsgListById(ArrayList<Message> msgs, int id) throws Exception {
+		for (Iterator<Message> i = msgs.iterator(); i.hasNext();) {
 			Message msg = i.next();
-			if(id == msg.getID()) return msg;
+			if (id == msg.getID())
+				return msg;
 		}
 		throw new Exception();
 	}

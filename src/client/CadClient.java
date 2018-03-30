@@ -25,6 +25,7 @@ public class CadClient {
 	private final String FE_Address;
 	private int ID = 1;
 	private BlockingQueue<Message> mMsgList = new LinkedBlockingQueue<Message>();
+	boolean crashed = false ;
 
 	public static void main(String[] args) throws IOException, ConfigurationException, ClassNotFoundException {
 		// arguments become the address and port
@@ -94,5 +95,11 @@ public class CadClient {
 
 	public int increaseID() {
 		return ID++;
+	}
+	
+	public void hasCrashed(){
+		if(crashed){
+			System.out.println("Error,client has crashed");
+		}
 	}
 }
