@@ -18,7 +18,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class CadClient {
 	// globals fields
-	private LinkedList<GObject> ObejectList = new LinkedList<>();
+	private LinkedList<GObject> ObjectList = new LinkedList<>();
 	static private GUI gui = null;
 	static FEConnectionToServer m_FEConnection = null;
 	private final int FEPort;
@@ -68,16 +68,17 @@ public class CadClient {
 	public void operate(Message message) throws IOException {
 		switch(message.getCommand()) {
 			case "/draw":
-				ObejectList.add(message.getObject());
+				ObjectList.add(message.getObject());
 				break;
 			case "/remove":
-				ObejectList.removeLast();
+				if (!ObjectList.isEmpty())
+					ObjectList.removeLast();
 				break;
 			default:
 				System.out.println("invalid command: "+message.getCommand());
 				break;
 		}
-		gui.setObjectList(ObejectList);
+		gui.setObjectList(ObjectList);
 	}
 
 	// getters and setters
