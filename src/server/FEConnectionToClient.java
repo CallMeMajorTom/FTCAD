@@ -64,8 +64,15 @@ public class FEConnectionToClient{
 			new Thread(new Worker(sendPacket, mSocket, message)).start();
 		}
 	}
+	/*
+	void runperiodically{
+		if timenow-lasttime>60{
+			assume client as crashed
+		}
+	}*/
 	
 	synchronized public void receiveMessage(Message message){
+		//lasttime = timenow; 
 		if(message.getMsgType()){//ack type.
 			System.out.println("ack extracted from packet");
 			try {searchMsgListById(mSentMessages, message.getID()).setConfirmedAsTrue();
