@@ -84,9 +84,11 @@ public class FEConnectionToClient {
 	 */
 
 	synchronized public void receiveMessage(Message message) {
-		endTime = System.currentTimeMillis();
+		long lastTime = System.currentTimeMillis();
 		System.out.println(endTime);
-		long lengthTime = endTime - startTime;
+
+		long currentTime = System.currentTimeMillis();
+		long lengthTime = currentTime - lastTime;
 		if (lengthTime > 5000) {
 			System.out.println("Clinet has crashed \n System will exit");
 			System.exit(-1);

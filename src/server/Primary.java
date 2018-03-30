@@ -12,9 +12,11 @@ public class Primary extends State{
 	Server mServer = null;
 
 	protected State update(Server server){
+		System.out.println("Primary state");
     	mServer = server;
+		new Thread(new ListenerThread(server.mFEConnectionToClients, server.mExpectedBQ, 
+				server.mUSocket, server.mFEAddress, server.mFEPort)).start();
     	//writeNtell();
-		System.out.println("primary state");
     	while(true) {
     		try {
 				Thread.sleep(50);
@@ -41,8 +43,7 @@ public class Primary extends State{
     		broadcast(msgs);
     	}
     }
-    
-	@SuppressWarnings("unused")
+	
 	private void writeNtell() {
 		//TODO write to primary file and tell frontend to read
 		XMLConfiguration conf = null;
@@ -54,7 +55,6 @@ public class Primary extends State{
 		//TODO change port to this servers port with help  of conf
 	} 
 	
-	@SuppressWarnings("unused")
 	private int readfile() {
 		XMLConfiguration conf = null;
 		try {

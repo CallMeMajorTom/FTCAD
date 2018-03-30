@@ -40,8 +40,7 @@ public class ReplicaConnection extends Thread {
 		}
 		mAlive = true;
 	}
-
-	@SuppressWarnings("unused")
+	
 	private void destructor() {
 		try {
 			mSocket.close();

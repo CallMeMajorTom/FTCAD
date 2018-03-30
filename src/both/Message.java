@@ -8,7 +8,6 @@ public class Message implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private boolean msgType = false;//false is send, true is acknowledge
 	private boolean mConfirmed = false;
-	@SuppressWarnings("unused")
 	private LocalDateTime mTime = LocalDateTime.now();
 	
 	private final int mID;

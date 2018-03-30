@@ -9,10 +9,6 @@ import java.io.IOException;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 
-/**
- *
- * @author brom
- */
 public class Detecting extends Thread{
 	private Process P;
 	private int position;

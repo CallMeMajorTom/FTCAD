@@ -22,7 +22,6 @@ public class RMmessage implements Serializable {
     private int sourcePort;
     private int destinationPort;
     private String type;
-    @SuppressWarnings("unused")
 	private InetAddress sourceAddr;
     private List<Object> data = new ArrayList<Object>();
 

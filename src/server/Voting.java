@@ -4,6 +4,7 @@ import java.util.ListIterator;
 
 public class Voting extends State{
     protected State update(Server server) {
+    	System.out.println("Voting state");
     	if(0 != server.mReplicaConnections.size()){
     		//tells the other replicas election started
     		server.sendElectionMessageToPeers();

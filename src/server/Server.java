@@ -24,11 +24,10 @@ public class Server {
 	protected ArrayList<Message> mMessageList = new ArrayList<Message>();//The list of the message, to record all operation
 	protected BlockingQueue<Message> mExpectedBQ = new LinkedBlockingQueue<Message>();
 	protected int mMsgID = 1;
+	protected DatagramSocket mUSocket;// The Socket for communication between Server and Client
+	protected final int mFEPort;// The Port of the Frontend
 	private ServerSocket mTSocket;// The Socket for communication between RM
-	private DatagramSocket mUSocket;// The Socket for communication between Server and Client
 	private State m_state;// The State, including : crashed, undetermined, voting, backup(no_integrated), backup(integrated), primary
-	@SuppressWarnings("unused")
-	private final int mFEPort;// The Port of the Frontend
 
 	private void StateMachine(){
 			System.out.println("State machine running for " + mPort);
@@ -67,7 +66,6 @@ public class Server {
 		}
 		System.out.println("mUSocket port: "+mUSocket.getLocalPort());
 		m_state = new Undetermined();// the initial state is Undetermined state
-		new Thread(new ListenerThread(mFEConnectionToClients,mExpectedBQ,mUSocket, mFEAddress,mFEPort)).start();
 	}
 
 	private void addReplicas(int port) {
@@ -248,7 +246,6 @@ public class Server {
 		}
 	}*/
 
-	@SuppressWarnings("unlikely-arg-type")
 	synchronized public void controlRecieveMessage(ReplicaConnection replicaConnection, RMmessage m) {// TODO:
 		if (m.equals(RMmessage.ELECTION)) {
 			receiveElectionMessage(m);
