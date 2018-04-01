@@ -25,20 +25,6 @@ public class ReplicaConnection extends Thread {
 		mName = "unknown";
 		mPort = port;
 		mTSocket = TSocket;
-		try {
-			mSocket = mTSocket.accept();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-			System.exit(-1);
-		}
-		try {
-			mOut = new ObjectOutputStream(mSocket.getOutputStream());
-			mIn = new ObjectInputStream(mSocket.getInputStream());
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(-1);
-		}
-		mAlive = true;
 	}
 	
 	private void destructor() {
@@ -59,6 +45,20 @@ public class ReplicaConnection extends Thread {
 	}
 
 	public void run() {
+		try {
+			mSocket = mTSocket.accept();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			System.exit(-1);
+		}
+		try {
+			mOut = new ObjectOutputStream(mSocket.getOutputStream());
+			mIn = new ObjectInputStream(mSocket.getInputStream());
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+		mAlive = true;
 		do {
 			receiveMessage();
 		} while (mAlive);

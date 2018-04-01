@@ -54,7 +54,7 @@ public class Server {
 		mPort = Port;
 		mFEPort = FEPort;
 		try {
-			mTSocket = new ServerSocket(25049);
+			mTSocket = new ServerSocket(mPort);
 			mUSocket = new DatagramSocket(mPort);
 		} catch (Exception e) {
 			e.printStackTrace();System.exit(-1);
@@ -73,6 +73,7 @@ public class Server {
 		Thread thread = new Thread(rep);
 		thread.start();
 		mReplicaConnections.add(rep);
+		System.out.println("replica connection ["+port+"] started");
 	}
 
 	/*??????
