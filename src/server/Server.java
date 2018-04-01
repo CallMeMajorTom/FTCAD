@@ -164,7 +164,7 @@ public class Server {
 	}
 
 	public void receivePongMessage(RMmessage m) {
-		System.out.println("Port"+mPort + " received pong from Port" + m.getSourcePort());
+		System.out.println("Port "+mPort + " received pong from Port " + m.getSourcePort());
 		synchronized (pendingPings) {
 			if (pendingPings.containsKey(m.getSourcePort())) {
 				pendingPings.remove(m.getSourcePort());
