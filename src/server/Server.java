@@ -139,7 +139,11 @@ public class Server {
 		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
 			int port = itr.next().mPort;
 			if (port > mPort) {
-				itr.next().sendMessage(RMmessage.ELECTION);
+				try {
+					itr.next().sendMessage(RMmessage.ELECTION);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 				synchronized (pendingElecResps) {
 					pendingElecResps.put(port, false);
 				}
@@ -150,8 +154,12 @@ public class Server {
 	public void sendPingToPeer(int peerPort) {
 		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
 			ReplicaConnection peer = itr.next();
-			if (peer.mPort == peerPort)
-				peer.sendMessage(RMmessage.PING);
+			if (peer.mPort == peerPort) {
+				try {
+					peer.sendMessage(RMmessage.PING);
+				} catch (Exception e) {;
+				}
+			}
 		}
 		synchronized (pendingPings) {
 			pendingPings.put(peerPort, true);
@@ -190,8 +198,8 @@ public class Server {
 		if (m.getSourcePort() < mPort) {// Send ok if the sender cant bully you
 			sendOkMessageToPeer(m.getSourcePort());
 		}
-		if (!holdingElection) {
-			// start voting_state;
+		if (!holdingElection) {// start voting_state;
+			m_state = new Voting();
 		}
 	}
 

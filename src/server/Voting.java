@@ -25,12 +25,17 @@ public class Voting extends State{
 	                }
 	            }
 	        }
+
 	        System.out.println("P" + server.mPort + " set itself as coordinator");
 	        server.Primary_Port = server.mPort;
 	        for(ListIterator<ReplicaConnection> itr = server.mReplicaConnections.listIterator();itr.hasNext();){//inform everyone that you are the coordinator
-	            itr.next().sendMessage(RMmessage.COORDINATOR);//TODO:create a new message class for commnication between RM
-	        }
-	        return new Primary();//TODO return right type
+				try {
+					itr.next().sendMessage(RMmessage.COORDINATOR);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+	        return new Primary();
     	} else return new Primary();
     }
 }
