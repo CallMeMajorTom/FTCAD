@@ -141,9 +141,7 @@ public class Server {
 			if (port > mPort) {
 				try {
 					itr.next().sendMessage(RMmessage.ELECTION);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				} catch (Exception e) {}
 				synchronized (pendingElecResps) {
 					pendingElecResps.put(port, false);
 				}
@@ -157,8 +155,7 @@ public class Server {
 			if (peer.mPort == peerPort) {
 				try {
 					peer.sendMessage(RMmessage.PING);
-				} catch (Exception e) {;
-				}
+				} catch (Exception e) {}
 			}
 		}
 		synchronized (pendingPings) {
@@ -203,17 +200,12 @@ public class Server {
 		}
 	}
 
-
-
-	/**
-	 * Receive information from the new coordinator
-	 */
+	// Receive information from the new coordinator
 	/*
 	 * public void receiveCoordinatorMessage(Message m) { System.out.println("P"
 	 * + id + " received coordinator message from P" + m.getSourceId()); int
 	 * coord = (Integer) m.getData().get(0); this.coordinator = coord; }
 	 */
-
 
 	// Receive a ping and send a pong
 	public void receivePingMessage(RMmessage m) {
