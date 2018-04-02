@@ -10,6 +10,8 @@ import java.net.SocketException;
 import both.Message;
 
 public class ReplicaConnection extends Thread {
+	public final int mPort;
+	
 	private ServerSocket mTSocket;
 	private Socket mSocket;
 	private ObjectInputStream mIn;
@@ -18,53 +20,22 @@ public class ReplicaConnection extends Thread {
 	private Server mServer;
 	private String mName;
 
-	public final int mPort;
-
 	public ReplicaConnection(int port, Server s, ServerSocket TSocket) {
 		mServer = s;
-		mName = "unknown";
+		mName = "unknown"+port;
 		mPort = port;
 		mTSocket = TSocket;
 	}
-	
-	private void destructor() {
-		try {
-			mSocket.close();
-			mOut.close();
-			mIn.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(-1);
-		}
-		mAlive = false;
-	}
-
-	private void restart() {
-		// TODO Auto-generated method stub
-
-	}
 
 	public void run() {
-		try {
-			mSocket = mTSocket.accept();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-			System.exit(-1);
-		}
-		try {
-			mOut = new ObjectOutputStream(mSocket.getOutputStream());
-			mIn = new ObjectInputStream(mSocket.getInputStream());
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(-1);
-		}
-		mAlive = true;
+		//starting connection
+		startConnection();
 		do {
 			receiveMessage();
 		} while (mAlive);
 	}
 
-	public void sendMessage(String msg) {
+	public void sendMessage(String msg) throws Exception {
 		if (mAlive) {
 			// marshalling message
 			TCPMessage mmsg = new TCPMessage(msg, null, false, mPort);
@@ -77,38 +48,7 @@ public class ReplicaConnection extends Thread {
 				System.exit(-1);
 			}
 			System.out.println("sent: " + msg);
-		}
-	}
-
-	private void receiveMessage() {
-		// recieve message
-		Object obj = null;
-		boolean clientcrash = false;
-		try {
-			obj = mIn.readObject();
-		} catch (SocketException e) {
-			clientcrash = true;
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(-1);
-		}
-		if (clientcrash) {
-			restart();
-		} else {
-			// unmarshalling message
-			String umsg = "";
-			if (obj instanceof Message) {
-				Message msg = (Message) obj;
-				umsg = msg.getCommand();
-			} else {
-				System.err.print("Weird error");
-				System.exit(-1);
-			}
-			System.out.println("recieved: " + umsg);
-			// rpc
-			RMmessage crm = new RMmessage(mPort, "");
-			mServer.controlRecieveMessage(this, crm);
-		}
+		} else throw new Exception();
 	}
 
 	public boolean hasName(String testName) {
@@ -127,8 +67,62 @@ public class ReplicaConnection extends Thread {
 		return mAlive;
 	}
 
-	public int receiveMessage2() {
-		// TODO Auto-generated method stub
-		return 0;
+	private void receiveMessage() {
+		// recieve message
+		Object obj = null;
+		try {
+			obj = mIn.readObject();
+		} catch (SocketException e) {
+			mAlive = false;
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+		if (mAlive) {
+			startConnection();
+		} else {
+			// unmarshalling message
+			String umsg = "";
+			if (obj instanceof Message) {
+				Message msg = (Message) obj;
+				umsg = msg.getCommand();
+			} else {
+				System.err.print("ReplicaConnection error");
+				System.exit(-1);
+			}
+			System.out.println("recieved: " + umsg);
+			// rpc
+			RMmessage crm = new RMmessage(mPort, "");
+			mServer.controlRecieveMessage(this, crm);
+		}
+	}
+	
+	public void destructor() {
+		try {
+			mSocket.close();
+			mOut.close();
+			mIn.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+		mAlive = false;
+	}
+
+	private void startConnection() {
+		try {
+			mSocket = mTSocket.accept();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			System.exit(-1);
+		}
+		try {
+			mOut = new ObjectOutputStream(mSocket.getOutputStream());
+			mIn = new ObjectInputStream(mSocket.getInputStream());
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+		mAlive = true;
 	}
 }
