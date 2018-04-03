@@ -29,10 +29,12 @@ public class ReplicaConnection extends Thread {
 
 	public void run() {
 		//starting connection
-		startConnection();
-		do {
-			receiveMessage();
-		} while (mAlive);
+		while(true) {
+			startConnection();
+			do {
+				receiveMessage();
+			} while (mAlive);
+		}
 	}
 
 	public void sendMessage(String msg) throws Exception {
