@@ -28,26 +28,25 @@ public class ReplicaConnection extends Thread {
 	}
 
 	public void run() {
-		//starting connection
-		while(true) {
-			startConnection();
-			do {
-				receiveMessage();
-			} while (mAlive);
-		}
-	}
+        //starting connection
+        while (true) {
+            while (startConnection()) { //Keep receive msg when the connection is established successfully
+                receiveMessage();
+            }
+        }
+    }
 
 	public void sendMessage(String msg) throws Exception {
 		if (mAlive) {
 			// marshalling message
 			TCPMessage mmsg = new TCPMessage(msg, null, false, mPort);
-			// send message to client
+			// send message to other RMs
 			try {
 				mOut.writeObject(mmsg);
 				mOut.flush();
 			} catch (IOException e) {
-				e.printStackTrace();
-				System.exit(-1);
+				System.err.println("The RM you try to send msg is not alive");
+				mAlive = false;
 			}
 			System.out.println("sent: " + msg);
 		} else throw new Exception();
@@ -111,12 +110,12 @@ public class ReplicaConnection extends Thread {
 		mAlive = false;
 	}
 
-	private void startConnection() {
+	private boolean startConnection() {
 		try {
 			mSocket = mTSocket.accept();
 		} catch (IOException e1) {
-			e1.printStackTrace();
-			System.exit(-1);
+		    System.err.println("The server you try to connect is not alive");
+		    return false;
 		}
 		try {
 			mOut = new ObjectOutputStream(mSocket.getOutputStream());
@@ -126,5 +125,6 @@ public class ReplicaConnection extends Thread {
 			System.exit(-1);
 		}
 		mAlive = true;
+		return true;
 	}
 }

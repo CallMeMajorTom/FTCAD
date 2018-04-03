@@ -137,13 +137,13 @@ public class Server {
 
 	public void sendElectionMessageToPeers() {
 		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
-			int port = itr.next().mPort;
-			if (port > mPort) {
+			ReplicaConnection rmc = itr.next();
+			if (rmc.mPort > mPort && rmc.getAlive()) {
 				try {
 					itr.next().sendMessage(RMmessage.ELECTION);
 				} catch (Exception e) {}
 				synchronized (pendingElecResps) {
-					pendingElecResps.put(port, false);
+					pendingElecResps.put(rmc.mPort, false);
 				}
 			}
 		}
