@@ -62,6 +62,12 @@ public class CadClient {
 					e.printStackTrace();System.exit(-1);//TODO why
 				}
 			}
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				System.exit(-1);
+			}
 		} while (true);
 	}
 
