@@ -44,7 +44,7 @@ public class FEConnectionToClient {
 	// send message to client
 	synchronized public void sendMessage(Message message) {
 		startTime = System.currentTimeMillis();
-		System.out.println("starttime: "+startTime);
+		//System.out.println("starttime: "+startTime);
 		message.setToPrimary(false);
 		// convert message to bytearray
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -72,7 +72,7 @@ public class FEConnectionToClient {
 		}
 
 		long endTime = System.nanoTime();
-		System.out.println(endTime);
+		//System.out.println("endtime: "+endTime);
 		lengthTime = endTime - startTime;
 	}
 
@@ -85,7 +85,7 @@ public class FEConnectionToClient {
 
 	synchronized public void receiveMessage(Message message) {
 		long lastTime = System.currentTimeMillis();
-		System.out.println("endtime: "+endTime);
+		//System.out.println("endtime: "+endTime);
 
 		long currentTime = System.currentTimeMillis();
 		long lengthTime = currentTime - lastTime;

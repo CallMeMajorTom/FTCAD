@@ -22,7 +22,9 @@ public class Worker extends Thread{
 			try {
 				for(int i = 0; i<mDiffusion;i++) 
 					mSocket.send(mMessage);
-				System.out.println("message sent: "+mAck.getID()+" "+mAck.getCommand()+" "+mMessage.getPort());
+				String receiver = ""+mAck.getPort();
+				if(mAck.getToPrimary()) receiver = "toPrimary";
+				System.out.println("message sent: "+mAck.getID()+" "+mAck.getCommand()+" "+mMessage.getPort()+receiver);
 				Thread.sleep(250);
 			} catch (Exception e) {
 				e.printStackTrace();System.exit(-1);

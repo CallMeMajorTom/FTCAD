@@ -18,14 +18,16 @@ public class ListenerThread extends Thread {
 	private DatagramSocket mUSocket;
 	private int mFEPort;
 	private InetAddress mFEAddress;
+	private ArrayList<Message> mServerMsgs;
 
 	// Construtor
 	public ListenerThread(ArrayList<FEConnectionToClient> clientConnections, BlockingQueue<Message> clientMsgs, 
-			DatagramSocket USocket, InetAddress feAddress, int fePort) {
+			DatagramSocket USocket, InetAddress feAddress, int fePort, ArrayList<Message> serverMsgs) {
 		mFEPort = fePort;
 		mFEAddress = feAddress;
 		mClientConnections = clientConnections;
 		mClientMsgs = clientMsgs;
+		mServerMsgs = serverMsgs;
 		mUSocket = USocket;
 	}
 
@@ -56,6 +58,8 @@ public class ListenerThread extends Thread {
 				}
 				if(addClient) { 
 					ctc = new FEConnectionToClient(msg.getClient(), msg.getPort(), mFEAddress, mFEPort, mUSocket, mClientMsgs);
+					for(Message smsg : mServerMsgs)
+						ctc.sendMessage(smsg);
 					mClientConnections.add(ctc);
 				}
 				//give connectiontoclient the message so he can produce expected or save it

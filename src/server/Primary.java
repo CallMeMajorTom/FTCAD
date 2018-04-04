@@ -15,7 +15,7 @@ public class Primary extends State{
 		System.out.println("Primary state");
     	mServer = server;
 		new Thread(new ListenerThread(server.mFEConnectionToClients, server.mExpectedBQ, 
-				server.mUSocket, server.mFEAddress, server.mFEPort)).start();
+				server.mUSocket, server.mFEAddress, server.mFEPort, server.mMessageList)).start();
     	//writeNtell();
     	while(true) {
     		try {
@@ -91,6 +91,7 @@ public class Primary extends State{
 	        for (FEConnectionToClient cc : mServer.mFEConnectionToClients) {
 	            cc.sendMessage(msg);
 	        }
+	        System.out.println("broadcast. number of clients: "+mServer.mFEConnectionToClients.size());
     	}
     }
 }
