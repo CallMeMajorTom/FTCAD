@@ -13,7 +13,12 @@ public class Primary extends State{
 
 	protected State update(Server server){
 		System.out.println("Primary state");
-    	mServer = server;
+        mServer = server;
+		try {
+			writeNtell();
+		} catch (ConfigurationException e) {
+			e.printStackTrace();
+		}
 		new Thread(new ListenerThread(server.mFEConnectionToClients, server.mExpectedBQ, 
 				server.mUSocket, server.mFEAddress, server.mFEPort, server.mMessageList)).start();
     	//writeNtell();
@@ -44,15 +49,10 @@ public class Primary extends State{
     	}
     }
 	
-	private void writeNtell() {
-		//TODO write to primary file and tell frontend to read
-		XMLConfiguration conf = null;
-		try {
-			conf = new XMLConfiguration("primary.xml");
-		} catch (ConfigurationException e) {
-			//TODO create primary file
-		}
-		//TODO change port to this servers port with help  of conf
+	private void writeNtell() throws ConfigurationException {
+		XMLConfiguration conf = new XMLConfiguration("primary.xml");
+		conf.setProperty("port",mServer.mPort);
+		//TODO tell FE
 	} 
 	
 	private int readfile() {

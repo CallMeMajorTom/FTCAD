@@ -9,12 +9,14 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import both.Message;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.XMLConfiguration;
 
 public class Server {
 
 	protected ArrayList<FEConnectionToClient> mFEConnectionToClients = new ArrayList<FEConnectionToClient>();//The array list of Clients
 	protected ArrayList<ReplicaConnection> mReplicaConnections = new ArrayList<ReplicaConnection>();// The array list of
-	protected int Primary_Port;// The port of the primary RM
+	protected int Primary_Port = -1;// The port of the primary RM
 	protected boolean holdingElection;
 	protected final int mPort;// The port of THIS server
 	protected final String mAddress = "localhost";//The address of THIS server
@@ -69,7 +71,7 @@ public class Server {
 	}
 
 	private void addReplicas(int port) {
-		ReplicaConnection rep = new ReplicaConnection(port, this, mTSocket);
+		ReplicaConnection rep = new ReplicaConnection(port,this, mTSocket);
 		Thread thread = new Thread(rep);
 		thread.start();
 		mReplicaConnections.add(rep);
@@ -110,8 +112,16 @@ public class Server {
 	 * holdingElection = false; }
 	 */
 
-	protected boolean isPrimaryAlive() {
+	protected boolean isPrimaryAlive()  {
 		// System.out.println(id + " checking if the coordinator is alive");
+		XMLConfiguration conf = null;
+		try {
+			conf = new XMLConfiguration("primary.xml");
+		} catch (ConfigurationException e) {
+			e.printStackTrace();
+		}
+		Primary_Port = conf.getInt("port");
+		System.out.println("!!!"+Primary_Port+"!!!");
 		if (Primary_Port == mPort) {
 			// if you are the coordinator, then you know you are alive
 			return true;
@@ -140,7 +150,7 @@ public class Server {
 			ReplicaConnection rmc = itr.next();
 			if (rmc.mPort > mPort && rmc.getAlive()) {
 				try {
-					itr.next().sendMessage(RMmessage.ELECTION);
+					rmc.sendMessage(RMmessage.ELECTION);
 				} catch (Exception e) {}
 				synchronized (pendingElecResps) {
 					pendingElecResps.put(rmc.mPort, false);
@@ -161,6 +171,22 @@ public class Server {
 		synchronized (pendingPings) {
 			pendingPings.put(peerPort, true);
 		}
+	}
+
+	public boolean askingForUpdate() {
+		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
+			ReplicaConnection rmc = itr.next();
+			if (rmc.mPort == this.Primary_Port) {
+				try {
+					rmc.sendMessage(RMmessage.UPDATE);
+					Thread.sleep(500);
+					return true;
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return false;
 	}
 
 	private void sendOkMessageToPeer(int sourcePort) {
