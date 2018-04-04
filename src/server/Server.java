@@ -9,12 +9,14 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import both.Message;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.XMLConfiguration;
 
 public class Server {
 
 	protected ArrayList<FEConnectionToClient> mFEConnectionToClients = new ArrayList<FEConnectionToClient>();//The array list of Clients
 	protected ArrayList<ReplicaConnection> mReplicaConnections = new ArrayList<ReplicaConnection>();// The array list of
-	protected int Primary_Port;// The port of the primary RM
+	protected int Primary_Port = -1;// The port of the primary RM
 	protected boolean holdingElection;
 	protected final int mPort;// The port of THIS server
 	protected final String mAddress = "localhost";//The address of THIS server
@@ -110,8 +112,16 @@ public class Server {
 	 * holdingElection = false; }
 	 */
 
-	protected boolean isPrimaryAlive() {
+	protected boolean isPrimaryAlive()  {
 		// System.out.println(id + " checking if the coordinator is alive");
+		XMLConfiguration conf = null;
+		try {
+			conf = new XMLConfiguration("primary.xml");
+		} catch (ConfigurationException e) {
+			e.printStackTrace();
+		}
+		Primary_Port = conf.getInt("port");
+		System.out.println("!!!"+Primary_Port+"!!!");
 		if (Primary_Port == mPort) {
 			// if you are the coordinator, then you know you are alive
 			return true;
