@@ -18,6 +18,7 @@ public class Primary extends State{
 			writeNtell();
 		} catch (ConfigurationException e) {
 			e.printStackTrace();
+			System.exit(-1);
 		}
 		new Thread(new ListenerThread(server.mFEConnectionToClients, server.mExpectedBQ, 
 				server.mUSocket, server.mFEAddress, server.mFEPort, server.mMessageList)).start();
@@ -48,7 +49,8 @@ public class Primary extends State{
     		broadcast(msgs);
     	}
     }
-	
+
+	//writes to primary file and tells frontend to read
 	private void writeNtell() throws ConfigurationException {
 		XMLConfiguration conf = new XMLConfiguration("primary.xml");
 		conf.setProperty("port",mServer.mPort);
