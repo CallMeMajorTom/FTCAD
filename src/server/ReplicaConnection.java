@@ -11,7 +11,6 @@ import both.Message;
 
 public class ReplicaConnection extends Thread {
 	public final int mPort;
-	
 	private ServerSocket mTSocket;
 	private Socket mSocket;
 	private ObjectInputStream mIn;//used for in going communication

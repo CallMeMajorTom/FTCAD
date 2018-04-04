@@ -71,7 +71,7 @@ public class Server {
 	}
 
 	private void addReplicas(int port) {
-		ReplicaConnection rep = new ReplicaConnection(port, this, mTSocket);
+		ReplicaConnection rep = new ReplicaConnection(port,this, mTSocket);
 		Thread thread = new Thread(rep);
 		thread.start();
 		mReplicaConnections.add(rep);
@@ -150,7 +150,7 @@ public class Server {
 			ReplicaConnection rmc = itr.next();
 			if (rmc.mPort > mPort && rmc.getAlive()) {
 				try {
-					itr.next().sendMessage(RMmessage.ELECTION);
+					rmc.sendMessage(RMmessage.ELECTION);
 				} catch (Exception e) {}
 				synchronized (pendingElecResps) {
 					pendingElecResps.put(rmc.mPort, false);
@@ -171,6 +171,22 @@ public class Server {
 		synchronized (pendingPings) {
 			pendingPings.put(peerPort, true);
 		}
+	}
+
+	public boolean askingForUpdate() {
+		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
+			ReplicaConnection rmc = itr.next();
+			if (rmc.mPort == this.Primary_Port) {
+				try {
+					rmc.sendMessage(RMmessage.UPDATE);
+					Thread.sleep(500);
+					return true;
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return false;
 	}
 
 	private void sendOkMessageToPeer(int sourcePort) {
