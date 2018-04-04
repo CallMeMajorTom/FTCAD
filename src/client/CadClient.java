@@ -48,7 +48,7 @@ public class CadClient {
 		FE_Address = "localhost";
 		m_FEConnection = new FEConnectionToServer(FE_Address, FEPort, mMsgList);
 		new Thread(m_FEConnection).start();// Keep receive message
-		//m_FEConnection.sendChatMessage(new Message(i, "hello", null, crashed, null, i));//hello
+		m_FEConnection.sendChatMessage(0, "hello", null);//hello
 		gui = new GUI(800,600,this);
 		gui.addToListener();
 	}

@@ -148,16 +148,14 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 		case MouseEvent.BUTTON1:
 			if (mCurrent != null) {
 				int id = mClient.increaseID();
-				Message message = new Message(id, "/draw",mCurrent, true, mClient.getM_Address(), mClient.getM_Port());
-				mClient.getM_FEConnection().sendChatMessage(message);
+				mClient.getM_FEConnection().sendChatMessage(id, "/draw",mCurrent);
 				mCurrent = null;
 			}
 			break;
 		case MouseEvent.BUTTON3://Rightclick undoes an operation by removing the most recently added object.
 			if (mObjectList.size() > 0) {
 				int id = mClient.increaseID();
-				Message message = new Message(id, "/remove", null, true, mClient.getM_Address(), mClient.getM_Port());
-				mClient.getM_FEConnection().sendChatMessage(message);
+				mClient.getM_FEConnection().sendChatMessage(id, "/remove", null);
 			}
 			break;
 		}
