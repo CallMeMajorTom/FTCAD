@@ -44,7 +44,7 @@ public class FEConnectionToClient {
 	// send message to client
 	synchronized public void sendMessage(Message message) {
 		startTime = System.currentTimeMillis();
-		System.out.println(startTime);
+		System.out.println("starttime: "+startTime);
 		message.setToPrimary(false);
 		// convert message to bytearray
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -85,7 +85,7 @@ public class FEConnectionToClient {
 
 	synchronized public void receiveMessage(Message message) {
 		long lastTime = System.currentTimeMillis();
-		System.out.println(endTime);
+		System.out.println("endtime: "+endTime);
 
 		long currentTime = System.currentTimeMillis();
 		long lengthTime = currentTime - lastTime;
@@ -98,15 +98,17 @@ public class FEConnectionToClient {
 			System.out.println("ack extracted from packet");
 			try {
 				searchMsgListById(mSentMessages, message.getID()).setConfirmedAsTrue();
-			} catch (Exception e) {
-				System.out.println(message.getID());
+			} catch (Exception e) {// cant happen or you didnt save whatever you sent. or a hacker. 
+				//TODO investigate please!
+				System.out.println("id: "+message.getID());
+				System.out.print("list: ");
 				for (Message each : mSentMessages) {
 					System.out.print(each.getID() + " ");
 				}
 				e.printStackTrace();
 				System.exit(-1);
-			} // cant happen or you didnt save whatever you sent. or a hacker.
-				// TODO investigate please!
+			} 
+				
 		} else {// send type. record message and save ack. Ack should be sent
 				// when sendAcks is called
 			System.out.println("message extracted from packet");

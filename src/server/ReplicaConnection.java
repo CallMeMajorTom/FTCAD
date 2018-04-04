@@ -14,8 +14,8 @@ public class ReplicaConnection extends Thread {
 	
 	private ServerSocket mTSocket;
 	private Socket mSocket;
-	private ObjectInputStream mIn;
-	private ObjectOutputStream mOut;
+	private ObjectInputStream mIn;//used for in going communication
+	private ObjectOutputStream mOut;//used for out going communication
 	private boolean mAlive = false;
 	private Server mServer;
 	private String mName;

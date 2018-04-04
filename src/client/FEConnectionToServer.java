@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.BlockingQueue;
 
+import both.GObject;
 import both.Message;
 import both.Worker;
 
@@ -26,7 +27,7 @@ public class FEConnectionToServer extends  Thread{
 	public FEConnectionToServer(String hostName, int port, BlockingQueue<Message> ExpectedBQ) throws SocketException, UnknownHostException {
 		m_FEPort = port;
 		m_FEAddress = InetAddress.getByName(hostName);
-		m_socket = new DatagramSocket(null);
+		m_socket = new DatagramSocket();
     	m_socket.connect(m_FEAddress, m_FEPort);
     	mExpectedBQ = ExpectedBQ;
 	}
@@ -36,7 +37,7 @@ public class FEConnectionToServer extends  Thread{
 			System.out.println("run loop start");
 			Message message = receiveChatMessage();
 			if(message.getMsgType()){//we got a ack
-				System.out.println("ack received");
+				System.out.println("ack received. id: "+message.getID());
 				try {
 					searchMsgListById(mSendList, message.getID()).setConfirmedAsTrue();
 				} catch (Exception e) {
@@ -44,7 +45,7 @@ public class FEConnectionToServer extends  Thread{
 				}
 			}
 			else {//we got a send. Operate the ordering. send a acknowledge
-				System.out.println("message received");
+				System.out.println("message received. id: "+message.getID());
 				try {//search if we already have the message
 					searchMsgListById(mReceivedList, message.getID());
 				} catch (Exception e) {//didnt have the message
@@ -57,7 +58,7 @@ public class FEConnectionToServer extends  Thread{
 		}
 	}
 	
-	public void sendChatMessage(Message message) {
+	private void sendChatMessage(Message message) {
 		message.setToPrimary(true);
 		//convert message to bytearray
 		try {
@@ -78,6 +79,11 @@ public class FEConnectionToServer extends  Thread{
 		} catch (IOException e) {
 			e.printStackTrace(); System.exit(-1);
 		}
+	}
+
+	public void sendChatMessage(int id, String command, GObject gobject) {
+		Message message = new Message(id, command, gobject, true, m_socket.getInetAddress(), m_socket.getLocalPort());
+		sendChatMessage(message);
 	}
 	
 	public DatagramSocket getSocket() {

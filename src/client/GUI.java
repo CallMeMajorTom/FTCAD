@@ -27,49 +27,50 @@ import both.Shape;
 
 public class GUI extends JFrame implements WindowListener, ActionListener, MouseListener, MouseMotionListener {
 	private static final long serialVersionUID = 1L;
-	JButton ovalButton = new JButton("Oval");
-	JButton rectangleButton = new JButton("Rect");
-	JButton lineButton = new JButton("Line");
-	JButton filledOvalButton = new JButton("Filled oval");
-	JButton filledRectangleButton = new JButton("Filled Rect");
-	JButton redButton = new JButton("Red");
-	JButton blueButton = new JButton("Blue");
-	JButton greenButton = new JButton("Green");
-	JButton whiteButton = new JButton("White");
-	JButton pinkButton = new JButton("Pink");
+	
+	private JButton mOvalButton = new JButton("Oval");
+	private JButton mRectangleButton = new JButton("Rect");
+	private JButton mLineButton = new JButton("Line");
+	private JButton mFilledOvalButton = new JButton("Filled oval");
+	private JButton mFilledRectangleButton = new JButton("Filled Rect");
+	private JButton mRedButton = new JButton("Red");
+	private JButton mBlueButton = new JButton("Blue");
+	private JButton mGreenButton = new JButton("Green");
+	private JButton mWhiteButton = new JButton("White");
+	private JButton mPinkButton = new JButton("Pink");
 
-	private GObject template = new GObject(Shape.OVAL, Color.RED, 363, 65, 25, 25);
-	private GObject current = null;
+	private GObject mTemplate = new GObject(Shape.OVAL, Color.RED, 363, 65, 25, 25);
+	private GObject mCurrent = null;
 
-	private LinkedList<GObject> objectList = new LinkedList<GObject>();
-	private CadClient client = null;
+	private LinkedList<GObject> mObjectList = new LinkedList<GObject>();
+	private CadClient mClient = null;
 
-	public void setObjectList(LinkedList<GObject> objectList) {
-		this.objectList = objectList;
-		repaint();
-	}
-
-	public GUI(int xpos, int ypos, CadClient m_client) {
+	public GUI(int xpos, int ypos, CadClient client) {
 		setSize(xpos, ypos);
 		setTitle("FTCAD");
-		client = m_client;
+		mClient = client;
 
 		Container pane = getContentPane();
 		pane.setBackground(Color.BLACK);
 
-		pane.add(ovalButton);
-		pane.add(rectangleButton);
-		pane.add(lineButton);
-		pane.add(filledOvalButton);
-		pane.add(filledRectangleButton);
-		pane.add(redButton);
-		pane.add(blueButton);
-		pane.add(greenButton);
-		pane.add(whiteButton);
-		pane.add(pinkButton);
+		pane.add(mOvalButton);
+		pane.add(mRectangleButton);
+		pane.add(mLineButton);
+		pane.add(mFilledOvalButton);
+		pane.add(mFilledRectangleButton);
+		pane.add(mRedButton);
+		pane.add(mBlueButton);
+		pane.add(mGreenButton);
+		pane.add(mWhiteButton);
+		pane.add(mPinkButton);
 
 		pane.setLayout(new FlowLayout());
 		setVisible(true);
+	}
+	
+	public void setObjectList(LinkedList<GObject> objectList) {
+		this.mObjectList = objectList;
+		repaint();
 	}
 
 	public void addToListener() {
@@ -77,16 +78,16 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 		addMouseListener(this);
 		addMouseMotionListener(this);
 
-		ovalButton.addActionListener(this);
-		rectangleButton.addActionListener(this);
-		lineButton.addActionListener(this);
-		filledOvalButton.addActionListener(this);
-		filledRectangleButton.addActionListener(this);
-		redButton.addActionListener(this);
-		blueButton.addActionListener(this);
-		greenButton.addActionListener(this);
-		whiteButton.addActionListener(this);
-		pinkButton.addActionListener(this);
+		mOvalButton.addActionListener(this);
+		mRectangleButton.addActionListener(this);
+		mLineButton.addActionListener(this);
+		mFilledOvalButton.addActionListener(this);
+		mFilledRectangleButton.addActionListener(this);
+		mRedButton.addActionListener(this);
+		mBlueButton.addActionListener(this);
+		mGreenButton.addActionListener(this);
+		mWhiteButton.addActionListener(this);
+		mPinkButton.addActionListener(this);
 
 	}
 
@@ -128,8 +129,8 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 		switch(e.getButton()) {
 		case MouseEvent.BUTTON1:
 			if (e.getX() > 0 && e.getY() > 91) {
-				current = new GObject(template.getShape(), template.getColor(), e.getX(), e.getY(), 0, 0);
-			} else current = null;
+				mCurrent = new GObject(mTemplate.getShape(), mTemplate.getColor(), e.getX(), e.getY(), 0, 0);
+			} else mCurrent = null;
 			break;
 		case MouseEvent.BUTTON3:
 			//TODO
@@ -145,18 +146,16 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 	public void mouseReleased(MouseEvent e) {
 		switch (e.getButton()) {
 		case MouseEvent.BUTTON1:
-			if (current != null) {
-				int id = client.increaseID();
-				Message message = new Message(id, "/draw",current, true, client.getM_Address(), client.getM_Port());
-				client.getM_FEConnection().sendChatMessage(message);
-				current = null;
+			if (mCurrent != null) {
+				int id = mClient.increaseID();
+				mClient.getM_FEConnection().sendChatMessage(id, "/draw",mCurrent);
+				mCurrent = null;
 			}
 			break;
 		case MouseEvent.BUTTON3://Rightclick undoes an operation by removing the most recently added object.
-			if (objectList.size() > 0) {
-				int id = client.increaseID();
-				Message message = new Message(id, "/remove", null, true, client.getM_Address(), client.getM_Port());
-				client.getM_FEConnection().sendChatMessage(message);
+			if (mObjectList.size() > 0) {
+				int id = mClient.increaseID();
+				mClient.getM_FEConnection().sendChatMessage(id, "/remove", null);
 			}
 			break;
 		}
@@ -168,34 +167,34 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 	}
 
 	public void mouseDragged(MouseEvent e) {
-		if (current != null && e.getX() > 0 && e.getY() > 91) {
-			current.setDimensions(e.getX() - current.getX(), e.getY() - current.getY());
+		if (mCurrent != null && e.getX() > 0 && e.getY() > 91) {
+			mCurrent.setDimensions(e.getX() - mCurrent.getX(), e.getY() - mCurrent.getY());
 		}
 		repaint();
 	}
 
 	// ActionListener methods
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == ovalButton) {
-			template.setShape(Shape.OVAL);
-		} else if (e.getSource() == rectangleButton) {
-			template.setShape(Shape.RECTANGLE);
-		} else if (e.getSource() == lineButton) {
-			template.setShape(Shape.LINE);
-		} else if (e.getSource() == filledOvalButton) {
-			template.setShape(Shape.FILLED_OVAL);
-		} else if (e.getSource() == filledRectangleButton) {
-			template.setShape(Shape.FILLED_RECTANGLE);
-		} else if (e.getSource() == redButton) {
-			template.setColor(Color.RED);
-		} else if (e.getSource() == blueButton) {
-			template.setColor(Color.BLUE);
-		} else if (e.getSource() == greenButton) {
-			template.setColor(Color.GREEN);
-		} else if (e.getSource() == whiteButton) {
-			template.setColor(Color.WHITE);
-		} else if (e.getSource() == pinkButton) {
-			template.setColor(Color.PINK);
+		if (e.getSource() == mOvalButton) {
+			mTemplate.setShape(Shape.OVAL);
+		} else if (e.getSource() == mRectangleButton) {
+			mTemplate.setShape(Shape.RECTANGLE);
+		} else if (e.getSource() == mLineButton) {
+			mTemplate.setShape(Shape.LINE);
+		} else if (e.getSource() == mFilledOvalButton) {
+			mTemplate.setShape(Shape.FILLED_OVAL);
+		} else if (e.getSource() == mFilledRectangleButton) {
+			mTemplate.setShape(Shape.FILLED_RECTANGLE);
+		} else if (e.getSource() == mRedButton) {
+			mTemplate.setColor(Color.RED);
+		} else if (e.getSource() == mBlueButton) {
+			mTemplate.setColor(Color.BLUE);
+		} else if (e.getSource() == mGreenButton) {
+			mTemplate.setColor(Color.GREEN);
+		} else if (e.getSource() == mWhiteButton) {
+			mTemplate.setColor(Color.WHITE);
+		} else if (e.getSource() == mPinkButton) {
+			mTemplate.setColor(Color.PINK);
 		}
 		repaint();
 	}
@@ -203,14 +202,14 @@ public class GUI extends JFrame implements WindowListener, ActionListener, Mouse
 	public void update(Graphics g) {
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 60, getSize().width, getSize().height - 60);
-		template.draw(g);
+		mTemplate.draw(g);
 
-		for (ListIterator<GObject> itr = objectList.listIterator(); itr.hasNext();) {
+		for (ListIterator<GObject> itr = mObjectList.listIterator(); itr.hasNext();) {
 			itr.next().draw(g);
 		}
 
-		if (current != null) {
-			current.draw(g);
+		if (mCurrent != null) {
+			mCurrent.draw(g);
 		}
 	}
 

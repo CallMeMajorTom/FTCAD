@@ -44,17 +44,17 @@ public class ListenerThread extends Thread {
 	    		Message msg = (Message)object_stream.readObject();
 	    		System.out.println("packet received: "+ received.getPort()+", "+msg.getID());
 	    		//check if client exist. if not create client
-				boolean addClient = false;
+				boolean addClient = true;
 				FEConnectionToClient ctc = null;
 				for (Iterator<FEConnectionToClient> i = mClientConnections.iterator(); i.hasNext();) {
 					FEConnectionToClient ctci = i.next();
 					if(ctci.compareClient(msg.getClient(), msg.getPort())) {
 						ctc = ctci;
-						addClient = true;
+						addClient = false;
 						break;
 					}
 				}
-				if(!addClient) { 
+				if(addClient) { 
 					ctc = new FEConnectionToClient(msg.getClient(), msg.getPort(), mFEAddress, mFEPort, mUSocket, mClientMsgs);
 					mClientConnections.add(ctc);
 				}
