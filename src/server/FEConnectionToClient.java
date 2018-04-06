@@ -42,10 +42,11 @@ public class FEConnectionToClient {
 	}
 
 	// send message to client
-	synchronized public void sendMessage(Message message) {
+	synchronized public void sendMessage(Message pMessage) {
 		startTime = System.currentTimeMillis();
 		//System.out.println("starttime: "+startTime);
-		message.setToPrimary(false);
+		//sets where message shall go
+		Message message = new Message(pMessage, mAddress, mPort);
 		// convert message to bytearray
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		try {
@@ -70,7 +71,6 @@ public class FEConnectionToClient {
 			mSentMessages.add(message);
 			new Thread(new Worker(sendPacket, mSocket, message)).start();
 		}
-
 		long endTime = System.nanoTime();
 		//System.out.println("endtime: "+endTime);
 		lengthTime = endTime - startTime;
@@ -86,14 +86,13 @@ public class FEConnectionToClient {
 	synchronized public void receiveMessage(Message message) {
 		long lastTime = System.currentTimeMillis();
 		//System.out.println("endtime: "+endTime);
-
 		long currentTime = System.currentTimeMillis();
 		long lengthTime = currentTime - lastTime;
 		if (lengthTime > 5000) {
-			System.out.println("Clinet has crashed \n System will exit");
+			System.out.println("Client has crashed \n System will exit");
 			System.exit(-1);
-
 		}
+		
 		if (message.getMsgType()) {// ack type.
 			System.out.println("ack extracted from packet");
 			try {
@@ -108,7 +107,6 @@ public class FEConnectionToClient {
 				e.printStackTrace();
 				System.exit(-1);
 			} 
-				
 		} else {// send type. record message and save ack. Ack should be sent
 				// when sendAcks is called
 			System.out.println("message extracted from packet");

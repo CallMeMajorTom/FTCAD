@@ -23,7 +23,7 @@ public class CadClient {
 	static FEConnectionToServer m_FEConnection = null;
 	private final int FEPort;
 	private final String FE_Address;
-	private int ID = 1;
+	private int ID = 2;
 	private BlockingQueue<Message> mMsgList = new LinkedBlockingQueue<Message>();
 	boolean crashed = false ;
 
@@ -48,7 +48,7 @@ public class CadClient {
 		FE_Address = "localhost";
 		m_FEConnection = new FEConnectionToServer(FE_Address, FEPort, mMsgList);
 		new Thread(m_FEConnection).start();// Keep receive message
-		m_FEConnection.sendChatMessage(0, "hello", null);//hello
+		m_FEConnection.sendChatMessage(1, "hello", null);//hello
 		gui = new GUI(800,600,this);
 		gui.addToListener();
 	}

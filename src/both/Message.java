@@ -37,6 +37,16 @@ public class Message implements Serializable {
 		mClient = msg.getClient();
 		mPort = msg.getPort();
 	}
+	
+	public Message(Message msg, InetAddress address, int port) {//used by server to send
+		super();
+		mID = msg.getID();
+		mObject = msg.getObject();
+		mCommand = msg.getCommand();
+		mToPrimary = false;
+		mClient = address;
+		mPort = port;
+	}
 
 	synchronized public boolean getConfirmed(){
 		return mConfirmed;

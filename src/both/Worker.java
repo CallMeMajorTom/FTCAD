@@ -24,7 +24,7 @@ public class Worker extends Thread{
 					mSocket.send(mMessage);
 				String receiver = ""+mAck.getPort();
 				if(mAck.getToPrimary()) receiver = "toPrimary";
-				System.out.println("message sent: "+mAck.getID()+" "+mAck.getCommand()+" "+mMessage.getPort()+receiver);
+				System.out.println("message sent: "+mAck.getID()+" "+mAck.getCommand()+" "+receiver);
 				Thread.sleep(250);
 			} catch (Exception e) {
 				e.printStackTrace();System.exit(-1);

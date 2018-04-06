@@ -44,7 +44,7 @@ public class ListenerThread extends Thread {
 	    		ByteArrayInputStream byte_stream = new ByteArrayInputStream(buf);
 	    		ObjectInputStream object_stream = new ObjectInputStream(byte_stream);
 	    		Message msg = (Message)object_stream.readObject();
-	    		System.out.println("packet received: "+ received.getPort()+", "+msg.getID());
+	    		System.out.println("packet received: "+ msg.getPort()+", "+msg.getID());
 	    		//check if client exist. if not create client
 				boolean addClient = true;
 				FEConnectionToClient ctc = null;
