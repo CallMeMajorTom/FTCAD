@@ -13,8 +13,7 @@ import java.util.concurrent.BlockingQueue;
 import both.Message;
 import both.Worker;
 
-// responsible for sending messages, indirectly receiving messages, ordering, diffusion, 
-// acknowledge received messages
+// responsible for sending messages, indirectly receiving messages, ordering, diffusion, acknowledge received messages
 public class FEConnectionToClient {
 	private final int mPort;
 	private final InetAddress mAddress;
@@ -119,7 +118,6 @@ public class FEConnectionToClient {
 			System.out.println("Client has crashed \n System will exit");
 			System.exit(-1);
 		}
-		
 		if (message.getMsgType()) {// ack type.
 			System.out.println("ack extracted from packet");
 			try {
@@ -134,11 +132,10 @@ public class FEConnectionToClient {
 				e.printStackTrace();
 				System.exit(-1);
 			} 
-		} else {// send type. record message and save ack. Ack should be sent
-				// when sendAcks is called
-			System.out.println("message extracted from packet");
+		} else {// send type. record message and save ack. Ack should be sent when sendAcks is called
+			System.out.println("message extracted from packet: "+message.getID()+" of connectionId: "+message.getPort());
 			try {
-				searchMsgListById(mSentMessages, message.getID());
+				searchMsgListById(mReceivedMessages, message.getID());
 			} catch (Exception e) {
 				message.setMsgTypeAsTrue();
 				message.setConfirmedAsTrue();
@@ -169,12 +166,14 @@ public class FEConnectionToClient {
 	}
 
 	private void recordReceivedMessage(Message message) {
+		//System.out.println("record: "+message.getID()+" of connectionId: "+message.getPort());
 		mReceivedMessages.add(message);
 		if (mExpected == message.getID())
 			produceExpected(message);
 	}
 
 	private void produceExpected(Message message) {
+		//System.out.println("Produced: "+message.getID()+" of connectionId: "+message.getPort());
 		try {
 			mExpectedBQ.put(message);
 		} catch (InterruptedException e1) {
@@ -183,12 +182,10 @@ public class FEConnectionToClient {
 		}
 		// produce for server to consume
 		mExpected++;
-		// search receivedmessages for next expected one if found call it with
-		// this function
+		// search receivedmessages for next expected one if found call it with this function
 		try {
 			produceExpected(searchMsgListById(mReceivedMessages, mExpected));
-		} catch (Exception e) {
-		}
+		} catch (Exception e) {}
 	}
 
 	private Message searchMsgListById(ArrayList<Message> msgs, int id) throws Exception {

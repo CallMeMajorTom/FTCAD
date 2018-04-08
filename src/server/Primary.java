@@ -34,8 +34,8 @@ public class Primary extends State{
     		for (int i = server.mExpectedBQ.size(); 0<i ;i--) {
 	    		Message msg = null;
 				try {
-					msg = server.mExpectedBQ.take();
-				} catch (InterruptedException e) {
+					msg = server.mExpectedBQ.remove();
+				} catch (Exception e) {
 					e.printStackTrace(); System.exit(-1);//TODO Why did this happen
 				}
 	    		msg = new Message(msg, server.mMsgID);
