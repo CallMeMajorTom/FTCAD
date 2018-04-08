@@ -74,15 +74,17 @@ public class CadClient {
 
 	public void operate(Message message) throws IOException {
 		switch(message.getCommand()) {
-			case "/draw":
+			case "draw":
 				ObjectList.add(message.getObject());
 				break;
-			case "/remove":
+			case "remove":
 				if (!ObjectList.isEmpty())
 					ObjectList.removeLast();
 				break;
+			case "hello"://can be used to see if there are other clients. for now it does nothing
+				break;
 			default:
-				System.out.println("invalid command: "+message.getCommand());
+				System.err.println("invalid command: "+message.getCommand());
 				break;
 		}
 		gui.setObjectList(ObjectList);
