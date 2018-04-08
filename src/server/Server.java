@@ -121,6 +121,7 @@ public class Server {
 			e.printStackTrace();
 		}
 		Primary_Port = conf.getInt("port");
+		System.out.println(conf.getInt("port"));
 		System.out.println("!!!"+Primary_Port+"!!!");
 		if (Primary_Port == mPort) {
 			// if you are the coordinator, then you know you are alive
@@ -180,6 +181,7 @@ public class Server {
 				try {
 					rmc.sendMessage(RMmessage.UPDATE);
 					Thread.sleep(500);
+					System.out.println("sent updata");
 					return true;
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -187,6 +189,18 @@ public class Server {
 			}
 		}
 		return false;
+	}
+
+	public void receiveUpdateMessage(RMmessage m){
+		System.out.println("Port "+mPort + " received UPDATE from Port " + m.getSourcePort());
+		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
+			ReplicaConnection peer = itr.next();
+			if (peer.mPort == m.getSourcePort()) {
+				try {
+					peer.sendList(mMessageList);
+				} catch (Exception e) {}
+			}
+		}
 	}
 
 	private void sendOkMessageToPeer(int sourcePort) {
@@ -284,6 +298,9 @@ public class Server {
 			receivePingMessage(m);
 		else if (m.equals(RMmessage.PONG))
 			receivePongMessage(m);
+		else if (m.equals(RMmessage.UPDATE)){
+			receiveUpdateMessage(m);
+		}
 		else {
 			throw new RuntimeException("Unknown message type " + m);
 		}

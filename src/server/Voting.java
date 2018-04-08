@@ -1,5 +1,8 @@
 package server;
 
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.XMLConfiguration;
+
 import java.util.ListIterator;
 
 public class Voting extends State{
@@ -26,9 +29,9 @@ public class Voting extends State{
 	            }
 	        }
 
-	        System.out.println("P" + server.mPort + " set itself as coordinator");
+	        System.out.println("P " + server.mPort + " set itself as coordinator");
 	        server.Primary_Port = server.mPort;
-	        for(ListIterator<ReplicaConnection> itr = server.mReplicaConnections.listIterator();itr.hasNext();) {//inform everyone that you are the coordinator
+            for(ListIterator<ReplicaConnection> itr = server.mReplicaConnections.listIterator();itr.hasNext();) {//inform everyone that you are the coordinator
 				ReplicaConnection rmc = itr.next();
 				if (rmc.getAlive()) {
 					try {

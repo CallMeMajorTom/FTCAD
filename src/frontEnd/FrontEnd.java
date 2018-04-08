@@ -80,7 +80,7 @@ public class FrontEnd {
     private int readfile() {
 		XMLConfiguration conf = null;
 		try {
-			conf = new XMLConfiguration("primary.xml");
+			conf = new XMLConfiguration("server/primary.xml");
 			return conf.getInt("port");
 		} catch (ConfigurationException e) {
 			System.err.println("primary file doesnt exist");//if primaryfile doesnt exist

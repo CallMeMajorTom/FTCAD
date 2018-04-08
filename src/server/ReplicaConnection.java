@@ -6,6 +6,7 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
 
 import both.Message;
 
@@ -49,6 +50,14 @@ public class ReplicaConnection extends Thread {
 			}
 			System.out.println("sent: " + msg);
 		} else throw new Exception();
+	}
+
+	public void sendList(ArrayList<Message> m){
+		try {
+			mOut.writeObject(m);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public boolean hasName(String testName) {
