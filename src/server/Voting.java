@@ -51,11 +51,11 @@ public class Voting extends State{
     }
     public void startBully(){
     	// bully algorithm
-        noServers = getNumOfServerReplicas() ;
-    	int i ;
+       // noServers = getNumOfServerReplicas() ;
     	
     	System.out.println("current server will initiate election") ;
-    	int electi = getCurrentServerReplica() ;
+    	int electi = 0;
+    	//electi = getCurrentServerReplica() ;
     	elect(electi) ;
         }
         static void elect(int electi)
