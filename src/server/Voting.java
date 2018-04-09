@@ -50,6 +50,7 @@ public class Voting extends State{
     	else return new Primary();
     }
     public void startBully(){
+    	// bully algorithm
         noServers = getNumOfServerReplicas() ;
     	int i ;
     	
@@ -62,6 +63,7 @@ public class Voting extends State{
     		// clarity for output
     		electi = electi-1 ;
     		coordinator = electi + 1 ;
+    		// goes through each server and comapres to each other
     		for(int i = 0 ; i < noServers ; i ++)
     		{
     			if(servers[electi] < servers[i]){}
