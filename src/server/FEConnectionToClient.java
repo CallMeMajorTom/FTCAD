@@ -102,12 +102,11 @@ public class FEConnectionToClient {
 		lengthTime = endTime - startTime;
 	}
 
-	/*
-	 * void runperiodically(){ if (timenow-lasttime>60){ ///assume client as
-	 * crashed hasCrashed = true ;
-	 * 
-	 * } }
-	 */
+	void checkifclienthascrashed(){ 
+		if (endTime-startTime>60){ 
+			hasCrashed = true ;//assumes client has crashed
+		}
+	}
 
 	synchronized public void receiveMessage(Message message) {
 		long lastTime = System.currentTimeMillis();
