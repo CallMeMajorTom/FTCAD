@@ -70,36 +70,41 @@ public class FEConnectionToClient {
 		lengthTime = endTime - startTime;
 	}
 	
-	synchronized private void sendAck(Message message) {
-		startTime = System.currentTimeMillis();
-		//System.out.println("starttime: "+startTime);
-		// convert message to bytearray
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		try {
-			ObjectOutputStream object_output = new ObjectOutputStream(outputStream);
-			object_output.writeObject(message);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(-1);
-		}
-		byte[] data = outputStream.toByteArray();
-		// send
-		DatagramPacket sendPacket = new DatagramPacket(data, data.length, mFEAddress, mFEPort);
-		if (message.getMsgType()) {//ack
+	synchronized void sendAck(Message message) {
+		if(compareClient(message.getClient(), message.getPort())) {
+			startTime = System.currentTimeMillis();
+			//System.out.println("starttime: "+startTime);
+			// convert message to bytearray
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			try {
-				mSocket.send(sendPacket);
+				ObjectOutputStream object_output = new ObjectOutputStream(outputStream);
+				object_output.writeObject(message);
 			} catch (IOException e) {
 				e.printStackTrace();
 				System.exit(-1);
 			}
-			System.out.println("ack sent: " + sendPacket.getPort());
-		} else {
-			System.err.println("Cant send message from send ack function");
+			byte[] data = outputStream.toByteArray();
+			// send
+			DatagramPacket sendPacket = new DatagramPacket(data, data.length, mFEAddress, mFEPort);
+			if (message.getMsgType()) {//ack
+				try {
+					mSocket.send(sendPacket);
+				} catch (IOException e) {
+					e.printStackTrace();
+					System.exit(-1);
+				}
+				System.out.println("ack sent: " + sendPacket.getPort());
+			} else {
+				System.err.println("Cant send message from send ack function");
+				System.exit(-1);
+			}
+			endTime = System.nanoTime();
+			//System.out.println("endtime: "+endTime);
+			lengthTime = endTime - startTime;
+		}else {
+			System.err.println("this ack does not exist for this client");
 			System.exit(-1);
 		}
-		endTime = System.nanoTime();
-		//System.out.println("endtime: "+endTime);
-		lengthTime = endTime - startTime;
 	}
 
 	void checkifclienthascrashed(){ 
@@ -131,7 +136,9 @@ public class FEConnectionToClient {
 				e.printStackTrace();
 				System.exit(-1);
 			} 
-		} else {// send type. record message and save ack. Ack should be sent when sendAcks is called
+		} else {// send type. 
+			//record message and save ack. Ack should be sent if ack have already been sent
+			//when sendAck is called
 			System.out.println("message extracted from packet: "+message.getID()+" of connectionId: "+message.getPort());
 			try {
 				searchMsgListById(mReceivedMessages, message.getID());
