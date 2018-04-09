@@ -1,6 +1,11 @@
 package server;
 
 import both.Message;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.DatagramPacket;
 import java.util.ArrayList;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -8,21 +13,14 @@ import org.apache.commons.configuration.ConversionException;
 import org.apache.commons.configuration.XMLConfiguration;
 
 public class Primary extends State{
-	
 	Server mServer = null;
 
 	protected State update(Server server){
 		System.out.println("Primary state");
         mServer = server;
-		try {
-			writeNtell();
-		} catch (ConfigurationException e) {
-			e.printStackTrace();
-			System.exit(-1);
-		}
 		new Thread(new ListenerThread(server.mFEConnectionToClients, server.mExpectedBQ, 
 				server.mUSocket, server.mFEAddress, server.mFEPort, server.mMessageList)).start();
-    	//writeNtell();
+    	writeNtell();
     	while(true) {
     		try {
 				Thread.sleep(50);
@@ -51,12 +49,39 @@ public class Primary extends State{
     }
 
 	//writes to primary file and tells frontend to read
-	private void writeNtell() throws ConfigurationException {
-		XMLConfiguration conf = new XMLConfiguration("primary.xml");
+	private void writeNtell(){
+		//writes
+		XMLConfiguration conf = null;
+		try {
+			conf = new XMLConfiguration("primary.xml");
+		}catch(ConfigurationException e) {//TODO what are the conditions for this exception?
+			e.printStackTrace();
+			System.exit(-1);
+		}
 		conf.setProperty("port",mServer.mPort);
-		//TODO tell FE
+		//tell FE
+		Message message = new Message(0, "/tell", null, false, null, 0);
+			// convert message to bytearray
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		try {
+			ObjectOutputStream object_output = new ObjectOutputStream(outputStream);
+			object_output.writeObject(message);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+		byte[] data = outputStream.toByteArray();
+			// send
+		DatagramPacket sendPacket = new DatagramPacket(data, data.length, mServer.mFEAddress, mServer.mFEPort);
+		try {
+			mServer.mUSocket.send(sendPacket);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
 	} 
 	
+	//TODO why does this exist?
 	private int readfile() {
 		XMLConfiguration conf = null;
 		try {
