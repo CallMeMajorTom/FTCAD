@@ -7,6 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import both.Message;
 
@@ -95,7 +96,10 @@ public class ReplicaConnection extends Thread {
 			if (obj instanceof Message) {
 				Message msg = (Message) obj;
 				umsg = msg.getCommand();
-			} else {
+			} else if(obj instanceof ArrayList<?>) {
+				ArrayList<Message> messageList = (ArrayList<Message>) obj;
+				mServer.mMessageList = messageList;
+			}else{
 				System.err.print("ReplicaConnection error");
 				System.exit(-1);
 			}

@@ -191,14 +191,16 @@ public class Server {
 		return false;
 	}
 
-	public void receiveUpdateMessage(RMmessage m){
+	public void  receiveUpdateMessage(RMmessage m){
 		System.out.println("Port "+mPort + " received UPDATE from Port " + m.getSourcePort());
 		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
 			ReplicaConnection peer = itr.next();
 			if (peer.mPort == m.getSourcePort()) {
 				try {
 					peer.sendList(mMessageList);
-				} catch (Exception e) {}
+				} catch (Exception e) {
+					System.err.println("Cant send for some reason");
+				}
 			}
 		}
 	}
