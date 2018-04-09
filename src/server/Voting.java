@@ -6,6 +6,10 @@ import org.apache.commons.configuration.XMLConfiguration;
 import java.util.ListIterator;
 
 public class Voting extends State{
+	static int noServers;
+	static int coordinator ;
+	static int[] status;
+	static int[] servers ;
     protected State update(Server server) {
     	System.out.println("Voting state");
     	if(0 != server.mReplicaConnections.size()){
@@ -45,4 +49,29 @@ public class Voting extends State{
     	}
     	else return new Primary();
     }
+    public void startBully(){
+    	// bully algorithm
+       // noServers = getNumOfServerReplicas() ;
+    	
+    	System.out.println("current server will initiate election") ;
+    	int electi = 0;
+    	//electi = getCurrentServerReplica() ;
+    	elect(electi) ;
+        }
+        static void elect(int electi)
+    	{
+    		// clarity for output
+    		electi = electi-1 ;
+    		coordinator = electi + 1 ;
+    		// goes through each server and comapres to each other
+    		for(int i = 0 ; i < noServers ; i ++)
+    		{
+    			if(servers[electi] < servers[i]){}
+    			
+    				System.out.println("Election message is sent from " + (electi + 1) + " process " + (i + 1)) ;
+    				if( status[i] == 1){
+    					elect(i + 1) ;
+    				}
+    			}
+    		}
 }
