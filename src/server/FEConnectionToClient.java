@@ -107,7 +107,7 @@ public class FEConnectionToClient {
 		}
 	}
 
-	void checkifclienthascrashed(){ 
+	void checkIfClientHasCrashed(){ 
 		if (endTime-startTime>60){ 
 			hasCrashed = true ;//assumes client has crashed
 		}
