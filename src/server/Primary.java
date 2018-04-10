@@ -2,11 +2,10 @@ package server;
 
 import both.Message;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
+import java.util.Properties;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.ConversionException;
@@ -27,21 +26,23 @@ public class Primary extends State{
 			} catch (InterruptedException e) {
 				e.printStackTrace(); System.exit(-1);
 			}
-    		ArrayList<Message> msgs = new ArrayList<Message>();
-    		for (int i = server.mExpectedBQ.size(); 0<i ;i--) {
+    		ArrayList<Message> msgs = new ArrayList<Message>(),
+    			acks = new ArrayList<Message>();
+			for (int i = server.mExpectedBQ.size(); 0<i ;i--) {
 	    		Message msg = null;
 				try {
 					msg = server.mExpectedBQ.remove();
 				} catch (Exception e) {
 					e.printStackTrace(); System.exit(-1);//TODO Why did this happen
 				}
+	    		acks.add(msg);
 	    		msg = new Message(msg, server.mMsgID);
 	    		server.mMsgID++;
 	    		server.mMessageList.add(msg);
 	    		msgs.add(msg);
     		}
     		updateBackups();
-    		sendAcks(msgs);
+    		sendAcks(acks);
     		broadcast(msgs);
     	}
     }
@@ -56,7 +57,22 @@ public class Primary extends State{
 			e.printStackTrace();
 			System.exit(-1);
 		}
-		conf.setProperty("port",mServer.mPort);
+        /*Properties properties = new Properties();
+		properties.setProperty("port", String.valueOf(mServer.mPort));
+        try {
+            properties.storeToXML(new FileOutputStream("primary.xml"), "");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
+        conf.setProperty("port",mServer.mPort);
+        try {
+            conf.save("primary.xml");
+        } catch (ConfigurationException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Port now is " + conf.getInt("port"));
 		//tell FE
 		Message message = new Message(0, "/tell", null, false, null, 0);
 			// convert message to bytearray

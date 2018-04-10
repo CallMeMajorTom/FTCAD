@@ -116,7 +116,8 @@ public class Server {
 		// System.out.println(id + " checking if the coordinator is alive");
 		XMLConfiguration conf = null;
 		try {
-			conf = new XMLConfiguration("primary.xml");
+			conf = new XMLConfiguration();
+			conf.load("primary.xml");
 		} catch (ConfigurationException e) {
 			e.printStackTrace();
 		}
@@ -163,14 +164,17 @@ public class Server {
 	public void sendPingToPeer(int peerPort) {
 		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
 			ReplicaConnection peer = itr.next();
+			System.out.println(peer.mPort);
 			if (peer.mPort == peerPort) {
 				try {
 					peer.sendMessage(RMmessage.PING);
+					System.out.println("Last");
 				} catch (Exception e) {}
 			}
 		}
 		synchronized (pendingPings) {
 			pendingPings.put(peerPort, true);
+			System.out.println("put");
 		}
 	}
 

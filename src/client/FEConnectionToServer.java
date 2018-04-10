@@ -51,7 +51,7 @@ public class FEConnectionToServer extends  Thread{
 				} catch (Exception e) {//didnt have the message
 					recordReceivedMessage(message);
 				}
-				message.setMsgTypeAsTrue();
+				message.setMsgTypeAsAck();
 				message.setConfirmedAsTrue();
 				sendChatMessage(message);
 			}
