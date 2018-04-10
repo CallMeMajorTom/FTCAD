@@ -26,7 +26,6 @@ public class Primary extends State{
 			} catch (InterruptedException e) {
 				e.printStackTrace(); System.exit(-1);
 			}
-    		stopProducing();
     		ArrayList<Message> msgs = new ArrayList<Message>();
     		for (int i = server.mExpectedBQ.size(); 0<i ;i--) {
 	    		Message msg = null;
@@ -41,8 +40,7 @@ public class Primary extends State{
 	    		msgs.add(msg);
     		}
     		updateBackups();
-    		sendAcks();
-    		startProducing();
+    		sendAcks(msgs);
     		broadcast(msgs);
     	}
     }
@@ -109,21 +107,16 @@ public class Primary extends State{
     	return 0;
     }
 
-	private void stopProducing() {
-    	//TODO stop producing
-	}
-
-	private void startProducing() {
-		//TODO start producing
-	}
-
     private void updateBackups() {
 		// TODO update the backups with the latest updates
 	}
     
-	private void sendAcks(){
+	private void sendAcks(ArrayList<Message> msgs){
         for (FEConnectionToClient cc : mServer.mFEConnectionToClients) {
-            cc.sendAcks();
+        	for(Message msg : msgs) {
+        		if(cc.compareClient(msg.getClient(), msg.getPort()))
+        			cc.sendAck(msg);
+        	}
         }
     }
     

@@ -15,7 +15,7 @@ import org.apache.commons.configuration.XMLConfiguration;
 public class Server {
 
 	protected ArrayList<FEConnectionToClient> mFEConnectionToClients = new ArrayList<FEConnectionToClient>();//The array list of Clients
-	protected ArrayList<ReplicaConnection> mReplicaConnections = new ArrayList<ReplicaConnection>();// The array list of
+	protected static ArrayList<ReplicaConnection> mReplicaConnections = new ArrayList<ReplicaConnection>();// The array list of
 	protected int Primary_Port = -1;// The port of the primary RM
 	protected boolean holdingElection;
 	protected final int mPort;// The port of THIS server
@@ -293,6 +293,9 @@ public class Server {
 		}
 	}*/
 
+	public static int getReplicaConnections(){
+		return mReplicaConnections.size() ;
+	}
 	synchronized public void controlRecieveMessage(ReplicaConnection replicaConnection, RMmessage m) {// TODO:
 		if (m.equals(RMmessage.ELECTION)) {
 			receiveElectionMessage(m);
