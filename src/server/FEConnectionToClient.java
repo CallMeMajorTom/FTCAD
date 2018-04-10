@@ -154,7 +154,7 @@ public class FEConnectionToClient {
 	public boolean compareClient(InetAddress address, int port) {
 		return mPort == port && mAddress.equals(address);
 	}
-
+	
 	private void checkifclienthascrashed(){ 
 		if (endTime-startTime>60){ 
 			hasCrashed = true ;//assumes client has crashed

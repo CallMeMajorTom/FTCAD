@@ -15,7 +15,7 @@ import org.apache.commons.configuration.XMLConfiguration;
 public class Server {
 
 	protected ArrayList<FEConnectionToClient> mFEConnectionToClients = new ArrayList<FEConnectionToClient>();//The array list of Clients
-	protected ArrayList<ReplicaConnection> mReplicaConnections = new ArrayList<ReplicaConnection>();// The array list of
+	protected static ArrayList<ReplicaConnection> mReplicaConnections = new ArrayList<ReplicaConnection>();// The array list of
 	protected int Primary_Port = -1;// The port of the primary RM
 	protected boolean holdingElection;
 	protected final int mPort;// The port of THIS server
@@ -116,7 +116,8 @@ public class Server {
 		// System.out.println(id + " checking if the coordinator is alive");
 		XMLConfiguration conf = null;
 		try {
-			conf = new XMLConfiguration("primary.xml");
+			conf = new XMLConfiguration();
+			conf.load("primary.xml");
 		} catch (ConfigurationException e) {
 			e.printStackTrace();
 		}
@@ -163,14 +164,17 @@ public class Server {
 	public void sendPingToPeer(int peerPort) {
 		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
 			ReplicaConnection peer = itr.next();
+			System.out.println(peer.mPort);
 			if (peer.mPort == peerPort) {
 				try {
 					peer.sendMessage(RMmessage.PING);
+					System.out.println("Last");
 				} catch (Exception e) {}
 			}
 		}
 		synchronized (pendingPings) {
 			pendingPings.put(peerPort, true);
+			System.out.println("put");
 		}
 	}
 
@@ -289,6 +293,9 @@ public class Server {
 		}
 	}*/
 
+	public static int getReplicaConnections(){
+		return mReplicaConnections.size() ;
+	}
 	synchronized public void controlRecieveMessage(ReplicaConnection replicaConnection, RMmessage m) {// TODO:
 		if (m.equals(RMmessage.ELECTION)) {
 			receiveElectionMessage(m);
