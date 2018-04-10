@@ -1,8 +1,5 @@
 package server;
 
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.XMLConfiguration;
-
 import java.util.ListIterator;
 
 public class Voting extends State{
@@ -51,7 +48,7 @@ public class Voting extends State{
     }
     public void startBully(){
     	// bully algorithm
-        noServers = getNumOfServerReplicas() ;
+        noServers = Server.getReplicaConnections() ; ;
     	
     	System.out.println("current server will initiate election") ;
     	int electi = 0;
@@ -63,7 +60,7 @@ public class Voting extends State{
     		// clarity for output
     		electi = electi - 1 ;
     		coordinator = electi + 1 ;
-    		// goes through each server and comapres to each other
+    		// goes through each server and compares to each other
     		for(int i = 0 ; i < noServers ; i ++)
     		{
     			if(servers[electi] < servers[i]){}
