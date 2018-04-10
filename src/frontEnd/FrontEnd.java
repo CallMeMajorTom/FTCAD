@@ -84,6 +84,7 @@ public class FrontEnd {
 			return conf.getInt("port");
 		} catch (ConfigurationException e) {
 			System.err.println("primary file doesnt exist");//if primaryfile doesnt exist
+			System.exit(-1);
 		} catch (ConversionException e) {
 			System.err.println("not a port");//if port doesnt exist
     	}

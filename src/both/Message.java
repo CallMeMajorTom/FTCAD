@@ -60,7 +60,7 @@ public class Message implements Serializable {
 		return msgType;
 	}
 	
-	public void setMsgTypeAsTrue(){
+	public void setMsgTypeAsAck(){
 		msgType = true;
 	}
 

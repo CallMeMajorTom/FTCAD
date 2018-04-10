@@ -70,8 +70,15 @@ public class FEConnectionToClient {
 		lengthTime = endTime - startTime;
 	}
 	
-	synchronized void sendAck(Message message) {
-		if(compareClient(message.getClient(), message.getPort())) {
+	synchronized public void sendAck(Message message) {
+		String condition = "sendAck: ";
+		if(!compareClient(message.getClient(), message.getPort())) condition += "not same client";
+		else {try {
+				message = searchMsgListById(mReceivedMessages, message.getID());
+				if (!message.getMsgType()) {condition += "Cant send message from send ack function";}
+			} catch (Exception e1) { condition += "ack doesnt exist";}
+		}
+		if(condition.equals("sendAck: ")){
 			startTime = System.currentTimeMillis();
 			//System.out.println("starttime: "+startTime);
 			// convert message to bytearray
@@ -86,30 +93,20 @@ public class FEConnectionToClient {
 			byte[] data = outputStream.toByteArray();
 			// send
 			DatagramPacket sendPacket = new DatagramPacket(data, data.length, mFEAddress, mFEPort);
-			if (message.getMsgType()) {//ack
-				try {
-					mSocket.send(sendPacket);
-				} catch (IOException e) {
-					e.printStackTrace();
-					System.exit(-1);
-				}
-				System.out.println("ack sent: " + sendPacket.getPort());
-			} else {
-				System.err.println("Cant send message from send ack function");
+			mAcks.add(message);
+			try {
+				mSocket.send(sendPacket);
+			} catch (IOException e) {
+				e.printStackTrace();
 				System.exit(-1);
 			}
+			System.out.println("ack sent: " + sendPacket.getPort());
 			endTime = System.nanoTime();
 			//System.out.println("endtime: "+endTime);
 			lengthTime = endTime - startTime;
 		}else {
-			System.err.println("this ack does not exist for this client");
+			System.err.println(condition);
 			System.exit(-1);
-		}
-	}
-
-	void checkifclienthascrashed(){ 
-		if (endTime-startTime>60){ 
-			hasCrashed = true ;//assumes client has crashed
 		}
 	}
 
@@ -137,40 +134,34 @@ public class FEConnectionToClient {
 				System.exit(-1);
 			} 
 		} else {// send type. 
-			//record message and save ack. Ack should be sent if ack have already been sent
+			//record message if message isnt already saved. Ack should be sent if ack have already been sent.
 			//when sendAck is called
 			System.out.println("message extracted from packet: "+message.getID()+" of connectionId: "+message.getPort());
 			try {
 				searchMsgListById(mReceivedMessages, message.getID());
 			} catch (Exception e) {
-				message.setMsgTypeAsTrue();
+				message.setMsgTypeAsAck();
 				message.setConfirmedAsTrue();
-				message.setToPrimary(true);
+				message.setToPrimary(false);
 				recordReceivedMessage(message);
 			}
 			try {
-				searchMsgListById(mAcks, message.getID());
-			} catch (Exception e) {
-				message.setConfirmedAsTrue();
-				mAcks.add(message);
-			}
+				sendAck(searchMsgListById(mAcks, message.getID()));
+			} catch (Exception e) {	}
 		}
-	}
-
-	synchronized public void sendAcks() {
-		for (Iterator<Message> i = mAcks.iterator(); i.hasNext();) {
-			Message msg = i.next();
-			msg.setMsgTypeAsTrue();
-			msg.setToPrimary(false);
-			sendAck(msg);
-		}
-		mAcks = new ArrayList<Message>();
 	}
 
 	public boolean compareClient(InetAddress address, int port) {
 		return mPort == port && mAddress.equals(address);
 	}
 
+	private void checkifclienthascrashed(){ 
+		if (endTime-startTime>60){ 
+			hasCrashed = true ;//assumes client has crashed
+		}
+	}
+	
+	//saves message and produce a expected if conditions is right
 	private void recordReceivedMessage(Message message) {
 		//System.out.println("record: "+message.getID()+" of connectionId: "+message.getPort());
 		mReceivedMessages.add(message);

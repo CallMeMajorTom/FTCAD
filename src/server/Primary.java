@@ -27,21 +27,23 @@ public class Primary extends State{
 			} catch (InterruptedException e) {
 				e.printStackTrace(); System.exit(-1);
 			}
-    		ArrayList<Message> msgs = new ArrayList<Message>();
-    		for (int i = server.mExpectedBQ.size(); 0<i ;i--) {
+    		ArrayList<Message> msgs = new ArrayList<Message>(),
+    			acks = new ArrayList<Message>();
+			for (int i = server.mExpectedBQ.size(); 0<i ;i--) {
 	    		Message msg = null;
 				try {
 					msg = server.mExpectedBQ.remove();
 				} catch (Exception e) {
 					e.printStackTrace(); System.exit(-1);//TODO Why did this happen
 				}
+	    		acks.add(msg);
 	    		msg = new Message(msg, server.mMsgID);
 	    		server.mMsgID++;
 	    		server.mMessageList.add(msg);
 	    		msgs.add(msg);
     		}
     		updateBackups();
-    		sendAcks(msgs);
+    		sendAcks(acks);
     		broadcast(msgs);
     	}
     }
