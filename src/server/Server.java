@@ -16,7 +16,7 @@ public class Server {
 
 	protected ArrayList<FEConnectionToClient> mFEConnectionToClients = new ArrayList<FEConnectionToClient>();//The array list of Clients
 	protected static ArrayList<ReplicaConnection> mReplicaConnections = new ArrayList<ReplicaConnection>();// The array list of
-	protected int Primary_Port = -1;// The port of the primary RM
+	protected static int Primary_Port = -1;// The port of the primary RM
 	protected boolean holdingElection;
 	protected final int mPort;// The port of THIS server
 	protected final String mAddress = "localhost";//The address of THIS server
@@ -291,6 +291,11 @@ public class Server {
 
 	public static int getReplicaConnections(){
 		return mReplicaConnections.size() ;
+	}
+	
+	public static int getCurrentServerReplica()
+	{
+		return Primary_Port ;
 	}
 	synchronized public void controlRecieveMessage(ReplicaConnection replicaConnection, RMmessage m) {// TODO:
 		if (m.equals(RMmessage.ELECTION)) {

@@ -52,7 +52,7 @@ public class Voting extends State{
     	
     	System.out.println("current server will initiate election") ;
     	int electi = 0;
-    	electi = getCurrentServerReplica() ;
+    	electi = Server.getCurrentServerReplica() ;
     	elect(electi) ;
         }
         static void elect(int electi)
