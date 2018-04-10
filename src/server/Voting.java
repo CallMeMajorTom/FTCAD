@@ -57,7 +57,7 @@ public class Voting extends State{
         }
         static void elect(int electi)
     	{
-    		// clarity for output
+    		// clarity for output  
     		electi = electi - 1 ;
     		coordinator = electi + 1 ;
     		// goes through each server and compares to each other
