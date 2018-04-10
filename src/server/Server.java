@@ -289,6 +289,9 @@ public class Server {
 		}
 	}*/
 
+	public Object getReplicaConnections(){
+		return mReplicaConnections.size() ;
+	}
 	synchronized public void controlRecieveMessage(ReplicaConnection replicaConnection, RMmessage m) {// TODO:
 		if (m.equals(RMmessage.ELECTION)) {
 			receiveElectionMessage(m);
