@@ -73,9 +73,8 @@ public class Primary extends State{
             e.printStackTrace();
         }
         System.out.println("Port now is " + conf.getInt("port"));
-		//tell FE
+		//tell FE: create a message and convert to bytearray.
 		Message message = new Message(0, "/tell", null, false, null, 0);
-			// convert message to bytearray
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		try {
 			ObjectOutputStream object_output = new ObjectOutputStream(outputStream);
@@ -85,7 +84,7 @@ public class Primary extends State{
 			System.exit(-1);
 		}
 		byte[] data = outputStream.toByteArray();
-			// send
+		//tell FE: send
 		DatagramPacket sendPacket = new DatagramPacket(data, data.length, mServer.mFEAddress, mServer.mFEPort);
 		try {
 			mServer.mUSocket.send(sendPacket);

@@ -78,17 +78,6 @@ public class Server {
 		System.out.println("replica connection ["+port+"] started");
 	}
 
-	/*??????
-	public synchronized boolean addClient(String hostName, int port) throws SocketException, UnknownHostException {
-		InetAddress naddress = InetAddress.getByName(mAddress);
-		FEConnectionToClient m_FEConnectionToClient = new FEConnectionToClient(naddress, port, mUSocket,mExpectedBQ);// TODO:Blockingqueue
-		mFEConnectionToClients.add(m_FEConnectionToClient);
-		ListenerThread receive_message = new ListenerThread(mFEConnectionToClients,mExpectedBQ,mUSocket);
-		receive_message.start();
-		System.out.println("Client added");
-		return true;
-	}*/
-
 	/*
 	 * private Thread mTalker = new Thread () { public void run() {
 	 * System.out.println("Talker running for " + mPort); while (true) { if
@@ -301,6 +290,7 @@ public class Server {
 	{
 		return Primary_Port ;
 	}
+	
 	synchronized public void controlRecieveMessage(ReplicaConnection replicaConnection, RMmessage m) {// TODO:
 		if (m.equals(RMmessage.ELECTION)) {
 			receiveElectionMessage(m);
