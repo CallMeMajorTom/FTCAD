@@ -3,6 +3,7 @@ package server;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ConnectException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -83,6 +84,7 @@ public class ReplicaConnection extends Thread {
 		try {
 			obj = mIn.readObject();
 		} catch (SocketException e) {
+		    System.out.println("ReplicaConnection: "+mPort+" is dead");
 			mAlive = false;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -123,11 +125,23 @@ public class ReplicaConnection extends Thread {
 	}
 
 	private boolean startConnection() {
-		try {
-			mSocket = mTSocket.accept();
-		} catch (IOException e1) {
-		    System.err.println("The server you try to connect is not alive");
-		    return false;
+		if(mPort < mServer.mPort) {//initiate the accept
+			try{
+				mSocket = new Socket(mTSocket.getInetAddress(),mPort);//socket
+			}catch(ConnectException e) {
+				System.out.println("Server is not online");
+				return false;
+			} catch (IOException e) {e.printStackTrace(); System.exit(-1);}//TODO why happen?
+		} else if(mPort > mServer.mPort){//wait for accept
+			try {
+				mSocket = mTSocket.accept();
+			} catch (IOException e1) {
+			    System.err.println("The server you try to connect is not alive");
+			    return false;
+			}
+		} else { 
+		    System.err.println("rc: not right port");
+		    System.exit(-1);
 		}
 		try {
 			mOut = new ObjectOutputStream(mSocket.getOutputStream());
@@ -136,6 +150,7 @@ public class ReplicaConnection extends Thread {
 			e.printStackTrace();
 			System.exit(-1);
 		}
+	    System.out.println("ReplicaConnection: "+mPort+" is alive");
 		mAlive = true;
 		return true;
 	}
