@@ -141,7 +141,8 @@ public class Server {
 			ReplicaConnection rmc = itr.next();
 			if (rmc.mPort > mPort && rmc.getAlive()) {
 				try {
-					rmc.sendMessage(RMmessage.ELECTION);
+					RMmessage msg = new RMmessage(mPort,rmc.mPort,"ELECTION");
+					rmc.sendMessage(msg);
 				} catch (Exception e) {}
 				synchronized (pendingElecResps) {
 					pendingElecResps.put(rmc.mPort, false);
@@ -156,7 +157,8 @@ public class Server {
 			System.out.println(peer.mPort);
 			if (peer.mPort == peerPort) {
 				try {
-					peer.sendMessage(RMmessage.PING);
+					RMmessage msg = new RMmessage(mPort,peerPort,"PING");
+					peer.sendMessage(msg);
 					System.out.println("Last");
 				} catch (Exception e) {}
 			}
@@ -172,7 +174,8 @@ public class Server {
 			ReplicaConnection rmc = itr.next();
 			if (rmc.mPort == this.Primary_Port) {
 				try {
-					rmc.sendMessage(RMmessage.UPDATE);
+					RMmessage msg = new RMmessage(mPort,rmc.mPort,"UPDATE");
+					rmc.sendMessage(msg);
 					Thread.sleep(500);
 					System.out.println("sent updata");
 					return true;
@@ -244,8 +247,7 @@ public class Server {
 
 	// Receive a ping and send a pong
 	public void receivePingMessage(RMmessage m) {
-		// System.out.println("P" + id + " received ping from P" +
-		// m.getSourceId());
+		System.out.println("P" + mPort + " received ping from P" +  m.getSourcePort());
 		sendMessageToPeer(m.getSourcePort(), RMmessage.PONG, 0);
 	}
 
@@ -291,18 +293,18 @@ public class Server {
 		return Primary_Port ;
 	}
 	
-	synchronized public void controlRecieveMessage(ReplicaConnection replicaConnection, RMmessage m) {// TODO:
-		if (m.equals(RMmessage.ELECTION)) {
+	synchronized public void controlRecieveMessage(RMmessage m) {// TODO:
+		if (m.getType().equals("ELECTION")) {
 			receiveElectionMessage(m);
-		} else if (m.equals(RMmessage.COORDINATOR))
+		} else if (m.getType().equals("COORDINATOR"))
 			receiveCoordinatorMessage(m);
-		else if (m.equals(RMmessage.OK))
+		else if (m.getType().equals("OK"))
 			receiveOkMessage(m);
-		else if (m.equals(RMmessage.PING))
+		else if (m.getType().equals("PING"))
 			receivePingMessage(m);
-		else if (m.equals(RMmessage.PONG))
+		else if (m.getType().equals("PONG"))
 			receivePongMessage(m);
-		else if (m.equals(RMmessage.UPDATE)){
+		else if (m.getType().equals("UPDATE")){
 			receiveUpdateMessage(m);
 		}
 		else {

@@ -34,17 +34,15 @@ public class ReplicaConnection extends Thread {
         while (true) {
             while (startConnection()) { //Keep receive msg when the connection is established successfully
                 receiveMessage();
+                System.out.println("11");
             }
         }
     }
 
-	public void sendMessage(String msg) throws Exception {
+	public void sendMessage(RMmessage msg) throws Exception {
 		if (mAlive) {
-			// marshalling message
-			TCPMessage mmsg = new TCPMessage(msg, null, false, mPort);
-			// send message to other RMs
 			try {
-				mOut.writeObject(mmsg);
+				mOut.writeObject(msg);
 				mOut.flush();
 			} catch (IOException e) {
 				System.err.println("The RM you try to send msg is not alive");
@@ -84,31 +82,27 @@ public class ReplicaConnection extends Thread {
 		try {
 			obj = mIn.readObject();
 		} catch (SocketException e) {
-		    System.out.println("ReplicaConnection: "+mPort+" is dead");
+		    System.err.println("ReplicaConnection: "+mPort+" is dead");
 			mAlive = false;
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(-1);
 		}
-		if (mAlive) {
+		if (!mAlive) {
 			startConnection();
 		} else {
+		    System.out.println(obj.getClass());
 			// unmarshalling message
-			String umsg = "";
-			if (obj instanceof Message) {
-				Message msg = (Message) obj;
-				umsg = msg.getCommand();
+			if (obj instanceof RMmessage) {
+				RMmessage msg = (RMmessage) obj;
+				mServer.controlRecieveMessage(msg);
 			} else if(obj instanceof ArrayList<?>) {
 				ArrayList<Message> messageList = (ArrayList<Message>) obj;
 				mServer.mMessageList = messageList;
-			}else{
-				System.err.print("ReplicaConnection error");
-				System.exit(-1);
-			}
-			System.out.println("recieved: " + umsg);
-			// rpc
-			RMmessage crm = new RMmessage(mPort, "");
-			mServer.controlRecieveMessage(this, crm);
+			}else {
+                System.err.print("ReplicaConnection error");
+                System.exit(-1);
+            }
 		}
 	}
 	
