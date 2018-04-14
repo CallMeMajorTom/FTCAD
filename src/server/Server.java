@@ -172,7 +172,7 @@ public class Server {
 	public boolean askingForUpdate() {
 		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
 			ReplicaConnection rmc = itr.next();
-			if (rmc.mPort == this.Primary_Port) {
+			if (rmc.mPort == Server.Primary_Port) {
 				try {
 					RMmessage msg = new RMmessage(mPort,rmc.mPort,"UPDATE");
 					rmc.sendMessage(msg);
