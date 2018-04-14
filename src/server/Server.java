@@ -159,7 +159,6 @@ public class Server {
 				try {
 					RMmessage msg = new RMmessage(mPort,peerPort,"PING");
 					peer.sendMessage(msg);
-					System.out.println("Last");
 				} catch (Exception e) {}
 			}
 		}
@@ -248,7 +247,17 @@ public class Server {
 	// Receive a ping and send a pong
 	public void receivePingMessage(RMmessage m) {
 		System.out.println("P" + mPort + " received ping from P" +  m.getSourcePort());
-		sendMessageToPeer(m.getSourcePort(), RMmessage.PONG, 0);
+		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
+			ReplicaConnection peer = itr.next();
+			if (peer.mPort == m.getSourcePort()) {
+				try {
+					RMmessage msg = new RMmessage(mPort,peer.mPort,"PONG");
+					peer.sendMessage(msg);
+				} catch (Exception e) {
+					System.err.println("Cant send for some reason");
+				}
+			}
+		}
 	}
 
 	private void receiveCoordinatorMessage(RMmessage m) {
@@ -295,19 +304,18 @@ public class Server {
 	
 	synchronized public void controlRecieveMessage(RMmessage m) {// TODO:
 		if (m.getType().equals("ELECTION")) {
-			receiveElectionMessage(m);
-		} else if (m.getType().equals("COORDINATOR"))
-			receiveCoordinatorMessage(m);
-		else if (m.getType().equals("OK"))
-			receiveOkMessage(m);
-		else if (m.getType().equals("PING"))
-			receivePingMessage(m);
-		else if (m.getType().equals("PONG"))
-			receivePongMessage(m);
-		else if (m.getType().equals("UPDATE")){
-			receiveUpdateMessage(m);
-		}
-		else {
+			receiveElectionMessage(m);System.out.println("E");
+		} else if (m.getType().equals("COORDINATOR")){
+			receiveCoordinatorMessage(m);System.out.println("C");
+		} else if  (m.getType().equals("OK")){
+			receiveOkMessage(m);System.out.println("O");
+		} else if (m.getType().equals("PING")){
+			receivePingMessage(m);System.out.println("Ping");
+		} else if  (m.getType().equals("PONG")){
+			receivePongMessage(m);System.out.println("Pong");
+		} else if  (m.getType().equals("UPDATE")){
+			receiveUpdateMessage(m);System.out.println("U");
+		}else {
 			throw new RuntimeException("Unknown message type " + m);
 		}
 	}
