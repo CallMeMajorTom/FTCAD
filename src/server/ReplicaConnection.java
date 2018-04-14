@@ -34,7 +34,6 @@ public class ReplicaConnection extends Thread {
         while (true) {
             while (startConnection()) { //Keep receive msg when the connection is established successfully
                 receiveMessage();
-                System.out.println("11");
             }
         }
     }
