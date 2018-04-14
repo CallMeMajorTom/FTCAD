@@ -17,17 +17,15 @@ public class RMmessage implements Serializable {
     //sourceId is the origin of the message. sourcePort is sourceId
     //sourcePort is the port from which the message was sent
     private int sourcePort;
-    //destinationId is the target process. destinationPort is destinationId.
-    //destinationPort is the port to where this message shall be sent to.
     private int destinationPort;
-    //data is a list of data items that the process likes to send
     private List<Object> data = new ArrayList<Object>();
 
     private String type;
 	private InetAddress sourceAddr;
 
-    public RMmessage(int sourcePort, String type) {
+    public RMmessage(int sourcePort, int destinationPort, String type) {
         this.sourcePort = sourcePort;
+        this.destinationPort = destinationPort;
         this.type = type;
     }
 

@@ -137,7 +137,8 @@ public class Server {
 			ReplicaConnection rmc = itr.next();
 			if (rmc.mPort > mPort && rmc.getAlive()) {
 				try {
-					rmc.sendMessage(RMmessage.ELECTION);
+					RMmessage msg = new RMmessage(mPort,rmc.mPort,"ELECTION");
+					rmc.sendMessage(msg);
 				} catch (Exception e) {}
 				synchronized (pendingElecResps) {
 					pendingElecResps.put(rmc.mPort, false);
@@ -152,8 +153,8 @@ public class Server {
 			System.out.println("sends ping to: "+peer.mPort);
 			if (peer.mPort == peerPort) {
 				try {
-					peer.sendMessage(RMmessage.PING);
-					System.out.println("Last");
+					RMmessage msg = new RMmessage(mPort,peerPort,"PING");
+					peer.sendMessage(msg);
 				} catch (Exception e) {}
 			}
 		}
@@ -169,7 +170,8 @@ public class Server {
 			ReplicaConnection rmc = itr.next();
 			if (rmc.mPort == Primary_Port) {
 				try {
-					rmc.sendMessage(RMmessage.UPDATE);
+					RMmessage msg = new RMmessage(mPort,rmc.mPort,"UPDATE");
+					rmc.sendMessage(msg);
 					Thread.sleep(500);
 					System.out.println("sent update");
 					return true;
@@ -242,9 +244,18 @@ public class Server {
 
 	// Receive a ping and send a pong
 	public void receivePingMessage(RMmessage m) {
-		// System.out.println("P" + id + " received ping from P" +
-		// m.getSourceId());
-		sendMessageToPeer(m.getSourcePort(), RMmessage.PONG, 0);
+		System.out.println("P" + mPort + " received ping from P" +  m.getSourcePort());
+		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
+			ReplicaConnection peer = itr.next();
+			if (peer.mPort == m.getSourcePort()) {
+				try {
+					RMmessage msg = new RMmessage(mPort,peer.mPort,"PONG");
+					peer.sendMessage(msg);
+				} catch (Exception e) {
+					System.err.println("Cant send for some reason");
+				}
+			}
+		}
 	}
 
 	private void receiveCoordinatorMessage(RMmessage m) {
@@ -289,21 +300,20 @@ public class Server {
 		return Primary_Port ;
 	}
 	
-	synchronized public void controlRecieveMessage(ReplicaConnection replicaConnection, RMmessage m) {// TODO:
-		if (m.equals(RMmessage.ELECTION)) {
-			receiveElectionMessage(m);
-		} else if (m.equals(RMmessage.COORDINATOR))
-			receiveCoordinatorMessage(m);
-		else if (m.equals(RMmessage.OK))
-			receiveOkMessage(m);
-		else if (m.equals(RMmessage.PING))
-			receivePingMessage(m);
-		else if (m.equals(RMmessage.PONG))
-			receivePongMessage(m);
-		else if (m.equals(RMmessage.UPDATE)){
-			receiveUpdateMessage(m);
-		}
-		else {
+	synchronized public void controlRecieveMessage(RMmessage m) {// TODO:
+		if (m.getType().equals("ELECTION")) {
+			receiveElectionMessage(m);System.out.println("E");
+		} else if (m.getType().equals("COORDINATOR")){
+			receiveCoordinatorMessage(m);System.out.println("C");
+		} else if  (m.getType().equals("OK")){
+			receiveOkMessage(m);System.out.println("O");
+		} else if (m.getType().equals("PING")){
+			receivePingMessage(m);System.out.println("Ping");
+		} else if  (m.getType().equals("PONG")){
+			receivePongMessage(m);System.out.println("Pong");
+		} else if  (m.getType().equals("UPDATE")){
+			receiveUpdateMessage(m);System.out.println("U");
+		}else {
 			throw new RuntimeException("Unknown message type " + m);
 		}
 	}

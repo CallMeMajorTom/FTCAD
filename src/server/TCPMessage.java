@@ -1,6 +1,9 @@
 package server;
 
-public class TCPMessage {
+
+import java.io.Serializable;
+
+public class TCPMessage implements Serializable {
 
 	public static final String COORDINATOR = null;
 	String mmsg;
