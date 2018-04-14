@@ -49,46 +49,23 @@ public class Primary extends State{
 
 	//writes to primary file and tells frontend to read
 	private void writeNtell(){
-		//writes
-		XMLConfiguration conf = null;
 		try {
-			conf = new XMLConfiguration("primary.xml");
-		}catch(ConfigurationException e) {//TODO what are the conditions for this exception?
-			e.printStackTrace();
-			System.exit(-1);
-		}
-        /*Properties properties = new Properties();
-		properties.setProperty("port", String.valueOf(mServer.mPort));
-        try {
-            properties.storeToXML(new FileOutputStream("primary.xml"), "");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
-        conf.setProperty("port",mServer.mPort);
-        try {
+			//writes. reads from primary file and then writes to it.
+			XMLConfiguration conf = new XMLConfiguration("primary.xml");
+	        conf.setProperty("port",mServer.mPort);
             conf.save("primary.xml");
-        } catch (ConfigurationException e) {
-            e.printStackTrace();
-        }
-        System.out.println("Port now is " + conf.getInt("port"));
-		//tell FE: create a message and convert to bytearray.
-		Message message = new Message(0, "/tell", null, false, null, 0);
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		try {
+	        System.out.println("Port now is " + conf.getInt("port"));
+			//tell FE: create a message and convert to bytearray. Then send it.
+			Message message = new Message(0, "/tell", null, false, null, 0);
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			ObjectOutputStream object_output = new ObjectOutputStream(outputStream);
 			object_output.writeObject(message);
-		} catch (IOException e) {
+			byte[] data = outputStream.toByteArray();
+			mServer.mUSocket.send(new DatagramPacket(data, data.length, mServer.mFEAddress, mServer.mFEPort));
+		} catch(ConfigurationException e) {//happens if there are no primary.xml file
 			e.printStackTrace();
 			System.exit(-1);
-		}
-		byte[] data = outputStream.toByteArray();
-		//tell FE: send
-		DatagramPacket sendPacket = new DatagramPacket(data, data.length, mServer.mFEAddress, mServer.mFEPort);
-		try {
-			mServer.mUSocket.send(sendPacket);
-		} catch (IOException e) {
+        }catch (IOException e) {//TODO why happens?
 			e.printStackTrace();
 			System.exit(-1);
 		}

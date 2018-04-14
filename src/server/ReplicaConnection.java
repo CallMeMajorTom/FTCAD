@@ -128,8 +128,7 @@ public class ReplicaConnection extends Thread {
 		if(mPort < mServer.mPort) {//initiate the accept
 			try{
 				mSocket = new Socket(mTSocket.getInetAddress(),mPort);//socket
-			}catch(ConnectException e) {
-				System.out.println("Server is not online");
+			}catch(ConnectException e) {// cant connect
 				return false;
 			} catch (IOException e) {e.printStackTrace(); System.exit(-1);}//TODO why happen?
 		} else if(mPort > mServer.mPort){//wait for accept

@@ -13,7 +13,6 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 
 public class Server {
-
 	protected ArrayList<FEConnectionToClient> mFEConnectionToClients = new ArrayList<FEConnectionToClient>();//The array list of Clients
 	protected static ArrayList<ReplicaConnection> mReplicaConnections = new ArrayList<ReplicaConnection>();// The array list of
 	protected static int Primary_Port = -1;// The port of the primary RM
@@ -32,7 +31,6 @@ public class Server {
 	private State m_state;// The State, including : crashed, undetermined, voting, backup(no_integrated), backup(integrated), primary
 
 	private void StateMachine(){
-			System.out.println("State machine running for " + mPort);
 			while (true) {
 				m_state = m_state.update(this);
 			}
@@ -66,7 +64,6 @@ public class Server {
 		} catch (UnknownHostException e) {
 			e.printStackTrace(); System.exit(-1);
 		}
-		System.out.println("mUSocket port: "+mUSocket.getLocalPort());
 		m_state = new Undetermined();// the initial state is Undetermined state
 	}
 
@@ -111,8 +108,7 @@ public class Server {
 			e.printStackTrace();
 		}
 		Primary_Port = conf.getInt("port");
-		System.out.println(conf.getInt("port"));
-		System.out.println("!!!"+Primary_Port+"!!!");
+		System.out.println("primary is: "+Primary_Port);
 		if (Primary_Port == mPort) {
 			// if you are the coordinator, then you know you are alive
 			return true;
@@ -153,7 +149,7 @@ public class Server {
 	public void sendPingToPeer(int peerPort) {
 		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
 			ReplicaConnection peer = itr.next();
-			System.out.println(peer.mPort);
+			System.out.println("sends ping to: "+peer.mPort);
 			if (peer.mPort == peerPort) {
 				try {
 					peer.sendMessage(RMmessage.PING);
@@ -166,18 +162,20 @@ public class Server {
 			System.out.println("put");
 		}
 	}
-
+	
+	//ask for update from primary. TODO returns what?
 	public boolean askingForUpdate() {
 		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
 			ReplicaConnection rmc = itr.next();
-			if (rmc.mPort == this.Primary_Port) {
+			if (rmc.mPort == Primary_Port) {
 				try {
 					rmc.sendMessage(RMmessage.UPDATE);
 					Thread.sleep(500);
-					System.out.println("sent updata");
+					System.out.println("sent update");
 					return true;
 				} catch (Exception e) {
 					e.printStackTrace();
+					System.exit(-1);
 				}
 			}
 		}
