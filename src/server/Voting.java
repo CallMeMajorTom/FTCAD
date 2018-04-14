@@ -9,7 +9,7 @@ public class Voting extends State{
 	static int[] servers ;
     protected State update(Server server) {
     	System.out.println("Voting state");
-    	if(0 != server.mReplicaConnections.size()){
+    	if(0 != Server.mReplicaConnections.size()){
     		//Start the election and tell every one
     		server.sendElectionMessageToPeers();
     		try {
@@ -18,7 +18,7 @@ public class Voting extends State{
     			e.printStackTrace();
     		}
 
-    		for(ListIterator<ReplicaConnection> itr = server.mReplicaConnections.listIterator(); itr.hasNext();) {
+    		for(ListIterator<ReplicaConnection> itr = Server.mReplicaConnections.listIterator(); itr.hasNext();) {
     			ReplicaConnection rmc = itr.next();
     			if (rmc.mPort > server.mPort && rmc.getAlive()) { //Check the alive server who has larger port number
     				synchronized (server.pendingElecResps) {
@@ -31,8 +31,8 @@ public class Voting extends State{
 	        }
 
 	        System.out.println("P " + server.mPort + " set itself as coordinator");
-	        server.Primary_Port = server.mPort;
-            for(ListIterator<ReplicaConnection> itr = server.mReplicaConnections.listIterator();itr.hasNext();) {//inform everyone that you are the coordinator
+	        Server.Primary_Port = server.mPort;
+            for(ListIterator<ReplicaConnection> itr = Server.mReplicaConnections.listIterator();itr.hasNext();) {//inform everyone that you are the coordinator
 				ReplicaConnection rmc = itr.next();
 				if (rmc.getAlive()) {
 					try {
