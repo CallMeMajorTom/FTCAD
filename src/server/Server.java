@@ -160,7 +160,7 @@ public class Server {
 		}
 		synchronized (pendingPings) {
 			pendingPings.put(peerPort, true);
-			System.out.println("put");
+			System.out.println("puts (port, true) into pendingpings map");
 		}
 	}
 	
