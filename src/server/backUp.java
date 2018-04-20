@@ -3,7 +3,8 @@ package server;
 public class backUp extends State {
 	protected State update(Server server) {
 		System.out.println("backUp state");
-		if(!server.isPrimaryAliveDeadline()) return new Voting();//If the primary died now
+		if(!server.isPrimaryAlive()) return new Voting();//If the primary died now
+		server.askingForUpdate();
 		return this;//TODO implement this right
 	}
 }

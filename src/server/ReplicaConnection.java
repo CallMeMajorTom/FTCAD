@@ -97,7 +97,10 @@ public class ReplicaConnection extends Thread {
 				mServer.controlRecieveMessage(msg);
 			} else if(obj instanceof ArrayList<?>) {
 				ArrayList<Message> messageList = (ArrayList<Message>) obj;
-				mServer.mMessageList = messageList;
+				if(!mServer.mMessageList.equals(messageList)){
+					System.out.println("Update version:"+ (++mServer.mUpdate_Version));
+					mServer.mMessageList = messageList;
+				}
 			}else {
                 System.err.print("ReplicaConnection error");
                 System.exit(-1);
