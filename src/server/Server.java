@@ -85,28 +85,45 @@ public class Server {
 		System.out.println("replica connection ["+port+"] started");
 	}
 
-	/*
-	 * private Thread mTalker = new Thread () { public void run() {
-	 * System.out.println("Talker running for " + mPort); while (true) { if
-	 * (!isCoordinatorAlive()) { holdElection(); } try { Thread.sleep(3000); }
-	 * catch (InterruptedException e) { e.printStackTrace(); } } } };
-	 */
-
-	/*
-	 * public void holdElection() { System.out.println("P" + mPort +
-	 * " starting an election"); holdingElection = true;
-	 * sendElectionMessageToPeers(); try { Thread.sleep(1000); } catch
-	 * (InterruptedException e) { e.printStackTrace(); }
-	 * //System.out.println(sockets); for(ListIterator<ReplicaConnection> itr =
-	 * mReplicaConnections.listIterator();itr.hasNext();) { int port =
-	 * itr.next().mPort; if (port > mPort) { synchronized (pendingElecResps) {
-	 * if (!pendingElecResps.containsKey(port)) { return; } } } }
-	 * System.out.println("P" + mPort + " set itself as coordinator");
-	 * this.primary = mPort; for(ListIterator<ReplicaConnection> itr =
-	 * mReplicaConnections.listIterator();itr.hasNext();){//inform everyone that
-	 * you are the coordinator itr.next().sendMessage(Message.COORDINATOR); }
-	 * holdingElection = false; }
-	 */
+	//TODO is this used?
+	private Thread mTalker = new Thread () { 
+		public void run() {
+			System.out.println("Talker running for " + mPort); 
+			while (true) { 
+				if(!isCoordinatorAlive()) holdElection(); 
+				try { Thread.sleep(3000); 
+				} catch (InterruptedException e) { e.printStackTrace(); } 
+			} 
+		}
+		private boolean isCoordinatorAlive() {
+			// TODO
+			return false;
+		} 
+	};
+	 
+	//TODO is this used
+	public void holdElection() { 
+		System.out.println("P"+mPort+" starting an election"); 
+		mHoldingElection = true;
+		sendElectionMessageToPeers(); 
+		try { Thread.sleep(1000); } catch(InterruptedException e) { e.printStackTrace(); }
+		System.out.println("tsocket: "+mTSocket); 
+		for(ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator();itr.hasNext();) { 
+			int port = itr.next().mPort; 
+			if (port > mPort) { 
+				synchronized (pendingElecResps) {
+					if (!pendingElecResps.containsKey(port)) { return; } 
+				} 
+			} 
+		}
+		System.out.println("P" + mPort + " set itself as coordinator");
+		mPrimary_Port = mPort; 
+		for(ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator();itr.hasNext();){
+			//TODO inform everyone that you are the coordinator 
+			//itr.next().sendMessage(Message.COORDINATOR);
+		}
+		mHoldingElection = false; 
+	}
 	
 	//looks into primary file. ask everone if they are the primary.
 	protected boolean isPrimaryAlive()  {
@@ -123,30 +140,28 @@ public class Server {
 		if (mPrimary_Port == mPort && readPrimary == mPrimary_Port) {
 			// if you are the coordinator, then you know you are alive
 			return true;
-		}else if (readPrimary != -1) {
+		}else{
 			if(mPrimary_Port == mPort && readPrimary != mPrimary_Port){
 				System.err.println("This server think its the primary and the primary file is something else");
 				System.exit(-1);
 			}
-			// ask the coordinator if he is alive with a ping
-			sendPingToPeer(readPrimary);
-			// wait for its response
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			// if the coordinator did not reply with a pong in time, then assume its dead
-			if (pendingPings.containsKey(mPrimary_Port)) {
-				//System.out.println("Old Coordinator " + mPrimary_Port + " died");//bad print
-				pendingPings.remove(mPrimary_Port);
+			//TODO ask everone if they are the primary
+			ArrayList<Integer> plist;//primarylist;
+			if(plist.size()==1) {
+				if (readPrimary != plist.get(0)) {
+					System.err.println("primary isnt saved to file");
+					//TODO maybe save primary to file?
+				}
+				mPrimary_Port = readPrimary;
+				return true;
+			}else if(plist.size()>1) {
+				System.err.println("multiple primaries detected");
+				System.exit(-1);
+				return false;//TODO is this wrong?
+			}else if(readPrimary == -1) {
 				return false;
-			}
-			//TODO ask if coordinator is primary
-			mPrimary_Port = readPrimary;
-			return true;
-		} else
-			return false;
+			}else return false
+		}
 	}
 
 	//looks into primary file. ask everone if they are the primary and checks after deadline. 
