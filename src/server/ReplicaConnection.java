@@ -47,7 +47,7 @@ public class ReplicaConnection extends Thread {
 				System.err.println("The RM you try to send msg is not alive");
 				mAlive = false;
 			}
-			System.out.println("sent: " + msg);
+
 		} else throw new Exception();
 	}
 
@@ -90,7 +90,7 @@ public class ReplicaConnection extends Thread {
 		if (!mAlive) {
 			startConnection();
 		} else {
-		    System.out.println(obj.getClass());
+		    //System.out.println(obj.getClass());
 			// unmarshalling message
 			if (obj instanceof RMmessage) {
 				RMmessage msg = (RMmessage) obj;

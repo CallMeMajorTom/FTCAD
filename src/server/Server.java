@@ -150,17 +150,18 @@ public class Server {
 	public void sendPingToPeer(int peerPort) {
 		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
 			ReplicaConnection peer = itr.next();
-			System.out.println("sends ping to: "+peer.mPort);
+			System.out.println("1.sends ping to: "+peer.mPort);
 			if (peer.mPort == peerPort) {
 				try {
 					RMmessage msg = new RMmessage(mPort,peerPort,"PING");
+                    synchronized (pendingPings) {
+                        pendingPings.put(peerPort, true);
+                        System.out.println("2.puts (port, true) into pendingpings map");
+                    }
 					peer.sendMessage(msg);
+                    System.out.println("3.sent: " + msg.getType());
 				} catch (Exception e) {}
 			}
-		}
-		synchronized (pendingPings) {
-			pendingPings.put(peerPort, true);
-			System.out.println("puts (port, true) into pendingpings map");
 		}
 	}
 	
@@ -302,17 +303,17 @@ public class Server {
 	
 	synchronized public void controlRecieveMessage(RMmessage m) {// TODO:
 		if (m.getType().equals("ELECTION")) {
-			receiveElectionMessage(m);System.out.println("E");
+			receiveElectionMessage(m);System.out.println("Receive Election");
 		} else if (m.getType().equals("COORDINATOR")){
-			receiveCoordinatorMessage(m);System.out.println("C");
+			receiveCoordinatorMessage(m);System.out.println("Receive Coordinator");
 		} else if  (m.getType().equals("OK")){
-			receiveOkMessage(m);System.out.println("O");
+			receiveOkMessage(m);System.out.println("Receive Ok");
 		} else if (m.getType().equals("PING")){
-			receivePingMessage(m);System.out.println("Ping");
+			receivePingMessage(m);System.out.println("Receive Ping");
 		} else if  (m.getType().equals("PONG")){
-			receivePongMessage(m);System.out.println("Pong");
+			receivePongMessage(m);System.out.println("Receive Pong");
 		} else if  (m.getType().equals("UPDATE")){
-			receiveUpdateMessage(m);System.out.println("U");
+			receiveUpdateMessage(m);System.out.println("Receive Update");
 		}else {
 			throw new RuntimeException("Unknown message type " + m);
 		}
