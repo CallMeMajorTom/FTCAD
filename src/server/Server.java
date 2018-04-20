@@ -145,8 +145,12 @@ public class Server {
 				System.err.println("This server think its the primary and the primary file is something else");
 				System.exit(-1);
 			}
-			//TODO ask everone if they are the primary
-			ArrayList<Integer> plist;//primarylist;
+			ArrayList<Integer> plist = new ArrayList<Integer>();//primarylist;
+			for(ReplicaConnection each : mReplicaConnections) {
+				//TODO ask everone if they are the primary and save them to plist
+				boolean areprimary;
+				if(areprimary) plist.add(each.mPort);
+			}
 			if(plist.size()==1) {
 				if (readPrimary != plist.get(0)) {
 					System.err.println("primary isnt saved to file");
@@ -160,7 +164,7 @@ public class Server {
 				return false;//TODO is this wrong?
 			}else if(readPrimary == -1) {
 				return false;
-			}else return false
+			}else return false;
 		}
 	}
 
