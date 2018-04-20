@@ -15,8 +15,8 @@ import org.apache.commons.configuration.XMLConfiguration;
 public class Server {
 	protected ArrayList<FEConnectionToClient> mFEConnectionToClients = new ArrayList<FEConnectionToClient>();//The array list of Clients
 	protected static ArrayList<ReplicaConnection> mReplicaConnections = new ArrayList<ReplicaConnection>();// The array list of
-	protected static int Primary_Port = -1;// The port of the primary RM
-	protected boolean holdingElection;
+	protected static int mPrimary_Port = -1;// The port of the primary RM
+	protected boolean mHoldingElection;
 	protected final int mPort;// The port of THIS server
 	protected final String mAddress = "localhost";//The address of THIS server
 	protected InetAddress mFEAddress;
@@ -98,8 +98,9 @@ public class Server {
 	 * holdingElection = false; }
 	 */
 
+	//looks into primary file. ask everone if they are the primary. 
 	protected boolean isPrimaryAlive()  {
-		// System.out.println(id + " checking if the coordinator is alive");
+		// System.out.println(id + " checking if the coordinator is alive");//bad print
 		XMLConfiguration conf = null;
 		try {
 			conf = new XMLConfiguration();
@@ -107,26 +108,29 @@ public class Server {
 		} catch (ConfigurationException e) {
 			e.printStackTrace();
 		}
-		Primary_Port = conf.getInt("port");
-		System.out.println("primary is: "+Primary_Port);
-		if (Primary_Port == mPort) {
+		int readPrimary = conf.getInt("port");
+		//Primary_Port = conf.getInt("port");
+		//System.out.println("primary is: "+Primary_Port);//bad print
+		if (mPrimary_Port == mPort && readPrimary == mPrimary_Port) {
 			// if you are the coordinator, then you know you are alive
 			return true;
-		} else if (Primary_Port != -1) {
-			// ping the coordinator
-			sendPingToPeer(Primary_Port);
+		} else if (readPrimary != -1) {
+			// ask the coordinator if he is alive with a ping
+			sendPingToPeer(readPrimary);
 			// wait for its response
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			// if the coordinator did not reply with a pong, the its dead
-			if (pendingPings.containsKey(Primary_Port)) {
-				System.out.println("Old Coordinator " + Primary_Port + " died");
-				pendingPings.remove(Primary_Port);
+			// if the coordinator did not reply with a pong in time, then assume its dead
+			if (pendingPings.containsKey(mPrimary_Port)) {
+				//System.out.println("Old Coordinator " + mPrimary_Port + " died");//bad print
+				pendingPings.remove(mPrimary_Port);
 				return false;
 			}
+			//TODO ask if coordinator is primary
+			mPrimary_Port = readPrimary;
 			return true;
 		} else
 			return false;
@@ -168,7 +172,7 @@ public class Server {
 	public boolean askingForUpdate() {
 		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
 			ReplicaConnection rmc = itr.next();
-			if (rmc.mPort == Primary_Port) {
+			if (rmc.mPort == mPrimary_Port) {
 				try {
 					RMmessage msg = new RMmessage(mPort,rmc.mPort,"UPDATE");
 					rmc.sendMessage(msg);
@@ -230,7 +234,7 @@ public class Server {
 		if (m.getSourcePort() < mPort) {// Send ok if the sender cant bully you
 			sendOkMessageToPeer(m.getSourcePort());
 		}
-		if (!holdingElection) {// start voting_state;
+		if (!mHoldingElection) {// start voting_state;
 			m_state = new Voting();
 		}
 	}
@@ -297,7 +301,7 @@ public class Server {
 	
 	public static int getCurrentServerReplica()
 	{
-		return Primary_Port ;
+		return mPrimary_Port ;
 	}
 	
 	synchronized public void controlRecieveMessage(RMmessage m) {// TODO:
