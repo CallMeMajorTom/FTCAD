@@ -29,7 +29,7 @@ public class Server {
 	protected final int mFEPort;// The Port of the Frontend
 	private ServerSocket mTSocket;// The Socket for communication between RM
 	private State m_state;// The State, including : crashed, undetermined, voting, backup(no_integrated), backup(integrated), primary
-    protected int mUpdate_Version = 0;
+    protected int Update_Version() {return mMessageList.size();}
 
 	private void StateMachine(){
 			while (true) {
