@@ -68,6 +68,16 @@ public class Server {
 	}
 
 	private void addReplicas(int port) {
+		boolean duplicate = false;
+		for(ReplicaConnection check : mReplicaConnections) {
+			if(check.mPort==port) {
+				duplicate = true;
+			}
+		}
+		if(mPort == port || duplicate) {
+			System.err.println("duplicate rm detected");
+			System.exit(-1);
+		}
 		ReplicaConnection rep = new ReplicaConnection(port,this, mTSocket);
 		Thread thread = new Thread(rep);
 		thread.start();
@@ -97,9 +107,50 @@ public class Server {
 	 * you are the coordinator itr.next().sendMessage(Message.COORDINATOR); }
 	 * holdingElection = false; }
 	 */
-
-	//looks into primary file. ask everone if they are the primary. 
+	
+	//looks into primary file. ask everone if they are the primary.
 	protected boolean isPrimaryAlive()  {
+		// System.out.println(id + " checking if the coordinator is alive");//bad print
+		XMLConfiguration conf = null;
+		try {
+			conf = new XMLConfiguration();
+			conf.load("primary.xml");
+		} catch (ConfigurationException e) {
+			e.printStackTrace();
+		}
+		int readPrimary = conf.getInt("port");
+		//System.out.println("primary is: "+Primary_Port);//bad print
+		if (mPrimary_Port == mPort && readPrimary == mPrimary_Port) {
+			// if you are the coordinator, then you know you are alive
+			return true;
+		}else if (readPrimary != -1) {
+			if(mPrimary_Port == mPort && readPrimary != mPrimary_Port){
+				System.err.println("This server think its the primary and the primary file is something else");
+				System.exit(-1);
+			}
+			// ask the coordinator if he is alive with a ping
+			sendPingToPeer(readPrimary);
+			// wait for its response
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			// if the coordinator did not reply with a pong in time, then assume its dead
+			if (pendingPings.containsKey(mPrimary_Port)) {
+				//System.out.println("Old Coordinator " + mPrimary_Port + " died");//bad print
+				pendingPings.remove(mPrimary_Port);
+				return false;
+			}
+			//TODO ask if coordinator is primary
+			mPrimary_Port = readPrimary;
+			return true;
+		} else
+			return false;
+	}
+
+	//looks into primary file. ask everone if they are the primary and checks after deadline. 
+	protected boolean isPrimaryAliveDeadline()  {
 		// System.out.println(id + " checking if the coordinator is alive");//bad print
 		XMLConfiguration conf = null;
 		try {
@@ -115,6 +166,10 @@ public class Server {
 			// if you are the coordinator, then you know you are alive
 			return true;
 		} else if (readPrimary != -1) {
+			if(mPrimary_Port == mPort && readPrimary != mPrimary_Port){
+				System.err.println("This server think its the primary and the primary file is something else");
+				System.exit(-1);
+			}
 			// ask the coordinator if he is alive with a ping
 			sendPingToPeer(readPrimary);
 			// wait for its response
