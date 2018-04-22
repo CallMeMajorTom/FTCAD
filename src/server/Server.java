@@ -102,7 +102,7 @@ public class Server {
 		} 
 	};
 	 
-	//TODO is this used
+	//TODO is this used?
 	public void holdElection() { 
 		System.out.println("P"+mPort+" starting an election"); 
 		mHoldingElection = true;
@@ -278,9 +278,11 @@ public class Server {
 		}
 	}
 
+	//TODO is this used?
 	private void sendOkMessageToPeer(int sourcePort) {
 	}
 
+	//TODO is this used?
 	private void sendMessageToPeer(int sourcePort, String pong, int i) {
 	}
 
@@ -316,11 +318,10 @@ public class Server {
 	}
 
 	// Receive information from the new coordinator
-	/*
-	 * public void receiveCoordinatorMessage(Message m) { System.out.println("P"
-	 * + id + " received coordinator message from P" + m.getSourceId()); int
-	 * coord = (Integer) m.getData().get(0); this.coordinator = coord; }
-	 */
+	public void receiveCoordinatorMessage(Message m) { 
+		System.out.println("P"+id+" received coordinator message from P" + m.getSourceId()); 
+		int	coord = (Integer) m.getData().get(0); this.coordinator = coord; 
+	}
 
 	// Receive a ping and send a pong
 	public void receivePingMessage(RMmessage m) {
@@ -338,18 +339,28 @@ public class Server {
 		}
 	}
 
+	//TODO is this used?
 	private void receiveCoordinatorMessage(RMmessage m) {
 	}
 
-
-	/*
-	 * private int whoIsPrimary() { int winner = -1; ReplicaConnection c;
-	 * for(Iterator<ReplicaConnection> i = mReplicaConnections.iterator();
-	 * i.hasNext();) { c=i.next(); c.sendMessage("whoIsPrimary"); int r =
-	 * c.receiveMessage2(); if(-1!=r) {winner = r; break;} } return winner; }
-	 */
-
-	/*private void listenForClientMessages() {
+	//TODO is this used?
+	private int whoIsPrimary() { 
+		int winner = -1; 
+		ReplicaConnection c;
+		for(Iterator<ReplicaConnection> i = mReplicaConnections.iterator();i.hasNext();) {
+			c=i.next(); 
+			c.sendMessage("whoIsPrimary"); 
+			int r = c.receiveMessage2(); 
+			if(-1!=r) {
+				winner = r; 
+				break;
+			} 
+		} 
+		return winner; 
+	}
+	
+	//TODO is this used?
+	private void listenForClientMessages() {
 		System.out.println("Waiting for client messages... ");
 		do {
 			byte[] incomingData = new byte[256];
@@ -363,38 +374,39 @@ public class Server {
 				System.exit(-1);
 			}
 		} while (true);
-	}*/
+	}
 
-	/*public synchronized void broadcast(Message message) throws IOException {
+	public synchronized void broadcast(Message message) throws IOException {
 		for (FEConnectionToClient cc : mFEConnectionToClients) {
 			cc.sendMessage(message);
 		}
-	}*/
+	}
 
-	public static int getReplicaConnections(){
+	public static int getRMListSize(){
 		return mReplicaConnections.size() ;
 	}
 	
-	public static int getCurrentServerReplica()
-	{
+	public static int getCurrentPrimary(){
 		return mPrimary_Port ;
 	}
 	
-	synchronized public void controlRecieveMessage(RMmessage m) {// TODO:
-		if (m.getType().equals("ELECTION")) {
-			receiveElectionMessage(m);System.out.println("Receive Election");
-		} else if (m.getType().equals("COORDINATOR")){
-			receiveCoordinatorMessage(m);System.out.println("Receive Coordinator");
-		} else if  (m.getType().equals("OK")){
-			receiveOkMessage(m);System.out.println("Receive Ok");
-		} else if (m.getType().equals("PING")){
-			receivePingMessage(m);System.out.println("Receive Ping");
-		} else if  (m.getType().equals("PONG")){
-			receivePongMessage(m);System.out.println("Receive Pong");
-		} else if  (m.getType().equals("UPDATE")){
-			receiveUpdateMessage(m);System.out.println("Receive Update");
-		}else {
-			throw new RuntimeException("Unknown message type " + m);
+	// TODO whats left?
+	synchronized public void controlRecieveMessage(RMmessage m) {
+		switch(m.getType()) {
+		case "ELECTION": receiveElectionMessage(m);System.out.println("Receive Election");
+			break;
+		case "COORDINATOR": receiveCoordinatorMessage(m);System.out.println("Receive Coordinator");
+			break;
+		case "OK": receiveOkMessage(m);System.out.println("Receive Ok");
+			break;
+		case "PING": receivePingMessage(m);System.out.println("Receive Ping");
+			break;
+		case "PONG": receivePongMessage(m);System.out.println("Receive Pong");
+			break;
+		case "UPDATE": receiveUpdateMessage(m);System.out.println("Receive Update");
+			break;
+		default: throw new RuntimeException("Unknown message type " + m);
+			break;
 		}
 	}
 

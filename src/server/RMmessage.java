@@ -51,6 +51,4 @@ public class RMmessage implements Serializable {
     public void setType(String type) {
         this.type = type;
     }
-
-
 }

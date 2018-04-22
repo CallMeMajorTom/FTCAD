@@ -1,8 +1,5 @@
 package server;
 
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.XMLConfiguration;
-
 import java.util.ListIterator;
 
 public class Voting extends State{
