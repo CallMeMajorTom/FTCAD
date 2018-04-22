@@ -393,19 +393,32 @@ public class Server {
 	// TODO whats left?
 	synchronized public void controlRecieveMessage(RMmessage m) {
 		switch(m.getType()) {
-		case "ELECTION": receiveElectionMessage(m);System.out.println("Receive Election");
+		case "ELECTION": 
+			receiveElectionMessage(m);
+			System.out.println("Receive Election");
 			break;
-		case "COORDINATOR": receiveCoordinatorMessage(m);System.out.println("Receive Coordinator");
+		case "COORDINATOR": 
+			receiveCoordinatorMessage(m);
+			System.out.println("Receive Coordinator");
 			break;
-		case "OK": receiveOkMessage(m);System.out.println("Receive Ok");
+		case "OK": 
+			receiveOkMessage(m);
+			System.out.println("Receive Ok");
 			break;
-		case "PING": receivePingMessage(m);System.out.println("Receive Ping");
+		case "PING": 
+			receivePingMessage(m);
+			System.out.println("Receive Ping");
 			break;
-		case "PONG": receivePongMessage(m);System.out.println("Receive Pong");
+		case "PONG": 
+			receivePongMessage(m);
+			System.out.println("Receive Pong");
 			break;
-		case "UPDATE": receiveUpdateMessage(m);System.out.println("Receive Update");
+		case "UPDATE": 
+			receiveUpdateMessage(m);
+			System.out.println("Receive Update");
 			break;
-		default: throw new RuntimeException("Unknown message type " + m);
+		default: 
+			System.err.println("Unknown message type " + m);
 			break;
 		}
 	}
