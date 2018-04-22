@@ -126,7 +126,7 @@ public class Server {
 		mHoldingElection = false; 
 	}
 	
-	//looks into primary file. ask everone if they are the primary.
+	//looks into primary file. ask everyone if they are the primary.
 	protected boolean isPrimaryAlive()  {
 		// System.out.println(id + " checking if the coordinator is alive");//bad print
 		XMLConfiguration conf = null;
@@ -146,11 +146,11 @@ public class Server {
 				System.err.println("This server think its the primary and the primary file is something else");
 				System.exit(-1);
 			}
-			ArrayList<Integer> plist = new ArrayList<Integer>();//primarylist;
+			ArrayList<Integer> plist = new ArrayList<Integer>();//primary list;
 			for(ReplicaConnection each : mReplicaConnections) {
-				//TODO ask everone if they are the primary and save them to plist
-				boolean areprimary;
-				if(areprimary) plist.add(each.mPort);
+				//TODO ask everyone if they are the primary and save them to primary list	
+				boolean isPrimary = each.getIfPrimary(); //not sure what I tried here
+				if(isPrimary) plist.add(each.mPort);
 			}
 			if(plist.size()==1) {
 				if (readPrimary != plist.get(0)) {
@@ -169,7 +169,7 @@ public class Server {
 		}
 	}
 
-	//looks into primary file. ask everone if they are the primary and checks after deadline. 
+	//looks into primary file. ask everyone if they are the primary and checks after deadline. 
 	protected boolean isPrimaryAliveDeadline()  {
 		// System.out.println(id + " checking if the coordinator is alive");//bad print
 		XMLConfiguration conf = null;
@@ -282,6 +282,7 @@ public class Server {
 	}
 
 	private void sendMessageToPeer(int sourcePort, String pong, int i) {
+		//TODO
 	}
 
 	public void receivePongMessage(RMmessage m) {
@@ -307,7 +308,7 @@ public class Server {
 	// TODO: Put it in Backup state
 	public void receiveElectionMessage(RMmessage m) {
 		System.out.println("P" + mPort + " received election message from P" + m.getSourcePort());
-		if (m.getSourcePort() < mPort) {// Send ok if the sender cant bully you
+		if (m.getSourcePort() < mPort) {// Send ok if the sender can't bully you
 			sendOkMessageToPeer(m.getSourcePort());
 		}
 		if (!mHoldingElection) {// start voting_state;
@@ -380,7 +381,7 @@ public class Server {
 		return mPrimary_Port ;
 	}
 	
-	synchronized public void controlRecieveMessage(RMmessage m) {// TODO:
+	synchronized public void controlRecieveMessage(RMmessage m) {
 		if (m.getType().equals("ELECTION")) {
 			receiveElectionMessage(m);System.out.println("Receive Election");
 		} else if (m.getType().equals("COORDINATOR")){
