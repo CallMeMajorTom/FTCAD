@@ -20,8 +20,8 @@ public class Launcher{
 		XMLConfiguration conf = new XMLConfiguration("configuration.xml");
 		Process P = null;
 		for(int i = 0;i < 4; i++){
-			if(conf.getString("databases.database("+i+").role").equals("server")){
-				P = new ProcessBuilder("java","-jar","a17xiaji_tcp_server.jar",conf.getString("databases.database("+i+").port")).start();
+			if(conf.getString("databases.database("+i+").role").equals("replicamanager")){
+				P = new ProcessBuilder("java","-jar","a17xiaji_tcp_server.jar",conf.getString("databases.database("+i+").port"),conf.getString("databases.database("+i+").port_of_FE"),conf.getString("databases.database("+i+").port_of_RM1"),conf.getString("databases.database("+i+").port_of_RM2")).start();
 				ProcessList.add(P);
 				Detecting D = new Detecting(P,i);
 				D.start();

@@ -2,27 +2,30 @@
 <!-- configuration.xml -->
 <config>
 <databases>
-    <database>
-        <role>server</role>
-        <port>25021</port>
+        <database>
+        <role>replicamanager</role>
+        <port>25051</port>
+        <port_of_FE>25050</port_of_FE>
+        <port_of_RM1>25052</port_of_RM1>
+        <port_of_RM2>25053</port_of_RM2>
     </database>
-    <database>
-        <role>client</role>
-		<ip>127.0.0.1</ip>
-        <port>25021</port>
-        <username>Xiaotong</username>
+        <database>
+        <role>replicamanager</role>
+        <port>25052</port>
+        <port_of_FE>25050</port_of_FE>
+        <port_of_RM1>25051</port_of_RM1>
+        <port_of_RM2>25053</port_of_RM2>
+    </database>
+        <database>
+        <role>replicamanager</role>
+        <port>25053</port>
+        <port_of_FE>25050</port_of_FE>
+        <port_of_RM1>25051</port_of_RM1>
+        <port_of_RM2>25052</port_of_RM2>
     </database>
 	    <database>
-        <role>client</role>
-		<ip>127.0.0.1</ip>
-        <port>25021</port>
-        <username>David</username>
-    </database>
-	    <database>
-        <role>client</role>
-		<ip>127.0.0.1</ip>
-        <port>25021</port>
-        <username>Peter</username>
+        <role>frontend</role>
+        <port>25050</port>
     </database>
 </databases>
 </config>
