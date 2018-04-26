@@ -220,6 +220,23 @@ public class Server {
 			return false;
 	}
 
+	//TODO is this used?
+	private int whoIsPrimary() { 
+		int winner = -1; 
+		ReplicaConnection c;
+		for(Iterator<ReplicaConnection> i = mReplicaConnections.iterator();i.hasNext();) {
+			c=i.next(); 
+			//c.sendMessage("whoIsPrimary"); 
+			int r = 1;
+			//r= c.receiveMessage2(); 
+			if(-1!=r) {
+				winner = r; 
+				break;
+			} 
+		} 
+		return winner; 
+	}
+
 	public void sendElectionMessageToPeers() {
 		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
 			ReplicaConnection rmc = itr.next();
@@ -353,40 +370,6 @@ public class Server {
 
 	//TODO is this used?
 	private void receiveCoordinatorMessage(RMmessage m) {
-	}
-
-	//TODO is this used?
-	private int whoIsPrimary() { 
-		int winner = -1; 
-		ReplicaConnection c;
-		for(Iterator<ReplicaConnection> i = mReplicaConnections.iterator();i.hasNext();) {
-			c=i.next(); 
-			//c.sendMessage("whoIsPrimary"); 
-			int r = 1;
-			//r= c.receiveMessage2(); 
-			if(-1!=r) {
-				winner = r; 
-				break;
-			} 
-		} 
-		return winner; 
-	}
-	
-	//TODO is this used?
-	private void listenForClientMessages() {
-		System.out.println("Waiting for client messages... ");
-		do {
-			byte[] incomingData = new byte[256];
-			DatagramPacket incomingPacket = new DatagramPacket(incomingData, incomingData.length);
-			ByteArrayInputStream byte_stream = new ByteArrayInputStream(incomingPacket.getData());
-			try {
-				ObjectInputStream object_stream = new ObjectInputStream(byte_stream);
-				Message message = (Message) object_stream.readObject();
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.exit(-1);
-			}
-		} while (true);
 	}
 
 	public synchronized void broadcast(Message message) throws IOException {
