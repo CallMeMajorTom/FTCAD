@@ -8,13 +8,18 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.ListIterator;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import both.Message;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
+
+import both.Message;
 
 public class Server {
 	protected ArrayList<FEConnectionToClient> mFEConnectionToClients = new ArrayList<FEConnectionToClient>();//The array list of Clients
@@ -130,7 +135,7 @@ public class Server {
 		mHoldingElection = false; 
 	}
 	
-	//looks into primary file. ask everone if they are the primary.
+	//looks into primary file. ask everyone if they are the primary.
 	protected boolean isPrimaryAlive()  {
 		// System.out.println(id + " checking if the coordinator is alive");//bad print
 		XMLConfiguration conf = null;
@@ -150,11 +155,11 @@ public class Server {
 				System.err.println("This server think its the primary and the primary file is something else");
 				System.exit(-1);
 			}
-			ArrayList<Integer> plist = new ArrayList<Integer>();//primarylist;
+			ArrayList<Integer> plist = new ArrayList<Integer>();//primary list;
 			for(ReplicaConnection each : mReplicaConnections) {
-				//TODO ask everone if they are the primary and save them to plist
-				boolean areprimary = false;
-				//if(areprimary) plist.add(each.mPort);
+				//TODO ask everyone if they are the primary and save them to primary list	
+				boolean isPrimary = each.getIfPrimary(); //not sure what I tried here
+				if(isPrimary) plist.add(each.mPort);
 			}
 			if(plist.size()==1) {
 				if (readPrimary != plist.get(0)) {
@@ -173,7 +178,7 @@ public class Server {
 		}
 	}
 
-	//looks into primary file. ask everone if they are the primary and checks after deadline. 
+	//looks into primary file. ask everyone if they are the primary and checks after deadline. 
 	protected boolean isPrimaryAliveDeadline()  {
 		// System.out.println(id + " checking if the coordinator is alive");//bad print
 		XMLConfiguration conf = null;
@@ -247,13 +252,15 @@ public class Server {
 			}
 		}
 	}
-	
+
 	//TODO is this used?
 	private void sendOkMessageToPeer(int sourcePort) {
+		//TODO
 	}
 
 	//TODO is this used?
 	private void sendMessageToPeer(int sourcePort, String pong, int i) {
+		//TODO
 	}
 	
 	//ask for update from primary. TODO returns what?
@@ -313,7 +320,7 @@ public class Server {
 	// TODO: Put it in Backup state
 	public void receiveElectionMessage(RMmessage m) {
 		System.out.println("P" + mPort + " received election message from P" + m.getSourcePort());
-		if (m.getSourcePort() < mPort) {// Send ok if the sender cant bully you
+		if (m.getSourcePort() < mPort) {// Send ok if the sender can't bully you
 			sendOkMessageToPeer(m.getSourcePort());
 		}
 		if (!mHoldingElection) {// start voting_state;
@@ -323,6 +330,7 @@ public class Server {
 
 	// Receive information from the new coordinator
 	public void receiveCoordinatorMessage(Message m) { 
+		//TODO
 		//System.out.println("P"+id+" received coordinator message from P" + m.getSourceId()); 
 		//int coord = (Integer) m.getData().get(0); this.coordinator = coord; 
 	}
@@ -355,7 +363,7 @@ public class Server {
 			c=i.next(); 
 			//c.sendMessage("whoIsPrimary"); 
 			int r = 1;
-			//r=c.receiveMessage2(); 
+			//r= c.receiveMessage2(); 
 			if(-1!=r) {
 				winner = r; 
 				break;
@@ -395,7 +403,7 @@ public class Server {
 		return mPrimary_Port ;
 	}
 	
-	// TODO whats left?
+	// TODO what's left?
 	synchronized public void controlRecieveMessage(RMmessage m) {
 		switch(m.getType()) {
 		case "ELECTION": 
@@ -427,6 +435,4 @@ public class Server {
 			break;
 		}
 	}
-
-
 }
