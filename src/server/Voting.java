@@ -3,7 +3,7 @@ package server;
 import java.util.ListIterator;
 
 public class Voting extends State{
-	static int noServers = Server.getReplicaConnections();
+	static int noServers = Server.getRMListSize();
 	static int coordinator ;
 	static int[] status;
 	static int[] servers ;
@@ -53,7 +53,7 @@ public class Voting extends State{
     public void startBully(){
       	// bully algorithm
       	System.out.println("current server will initiate election") ;
-      	int electi = Server.getCurrentServerReplica();
+      	int electi = Server.getCurrentPrimary();
       	elect(electi) ;
         
 }

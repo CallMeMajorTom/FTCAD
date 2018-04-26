@@ -5,7 +5,6 @@ import both.Message;
 import java.io.*;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
-import java.util.Properties;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.ConversionException;

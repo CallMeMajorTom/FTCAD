@@ -22,7 +22,6 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 
 import both.GObject;
-import both.Message;
 import both.Shape;
 
 public class GUI extends JFrame implements WindowListener, ActionListener, MouseListener, MouseMotionListener {

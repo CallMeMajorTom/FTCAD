@@ -1,8 +1,5 @@
 package server;
 
-
-import org.apache.commons.configuration.ConfigurationException;
-
 public class Undetermined extends State {
 
     protected State update(Server server){
