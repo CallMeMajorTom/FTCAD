@@ -12,10 +12,11 @@ import org.apache.commons.configuration.XMLConfiguration;
 
 public class Primary extends State{
 	Server mServer = null;
-
+	static boolean isPrimary = false ; 
 	protected State update(Server server){
 		System.out.println("Primary state");
         mServer = server;
+        isPrimary = true ;
 		new Thread(new ListenerThread(server.mFEConnectionToClients, server.mExpectedBQ, 
 				server.mUSocket, server.mFEAddress, server.mFEPort, server.mMessageList)).start();
     	writeNtell();
@@ -45,8 +46,11 @@ public class Primary extends State{
     		broadcast(msgs);
     	}
     }
-
-	//writes to primary file and tells frontend to read
+	public static boolean getIfPrimary()
+	{
+		return isPrimary ;
+	}
+	//writes to primary file and tells front end to read
 	private void writeNtell(){
 		try {
 			//writes. reads from primary file and then writes to it.
@@ -54,7 +58,7 @@ public class Primary extends State{
 	        conf.setProperty("port",mServer.mPort);
             conf.save("primary.xml");
 	        System.out.println("Port now is " + conf.getInt("port"));
-			//tell FE: create a message and convert to bytearray. Then send it.
+			//tell FE: create a message and convert to byte array. Then send it.
 			Message message = new Message(0, "/tell", null, false, null, 0);
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			ObjectOutputStream object_output = new ObjectOutputStream(outputStream);

@@ -46,7 +46,6 @@ public class ReplicaConnection extends Thread {
 				System.err.println("The RM you try to send msg is not alive");
 				mAlive = false;
 			}
-
 		} else throw new Exception();
 	}
 
@@ -75,7 +74,7 @@ public class ReplicaConnection extends Thread {
 	}
 
 	private void receiveMessage() {
-		// recieve message
+		// receive message
 		Object obj = null;
 		try {
 			obj = mIn.readObject();
@@ -147,5 +146,10 @@ public class ReplicaConnection extends Thread {
 	    System.out.println("ReplicaConnection: "+mPort+" is alive");
 		mAlive = true;
 		return true;
+	}
+
+	public boolean getIfPrimary() {
+		// TODO Auto-generated method stub
+		return Primary.getIfPrimary();
 	}
 }
