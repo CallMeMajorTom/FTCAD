@@ -1,5 +1,9 @@
 package server;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -149,8 +153,8 @@ public class Server {
 			ArrayList<Integer> plist = new ArrayList<Integer>();//primarylist;
 			for(ReplicaConnection each : mReplicaConnections) {
 				//TODO ask everone if they are the primary and save them to plist
-				boolean areprimary;
-				if(areprimary) plist.add(each.mPort);
+				boolean areprimary = false;
+				//if(areprimary) plist.add(each.mPort);
 			}
 			if(plist.size()==1) {
 				if (readPrimary != plist.get(0)) {
@@ -244,6 +248,14 @@ public class Server {
 		}
 	}
 	
+	//TODO is this used?
+	private void sendOkMessageToPeer(int sourcePort) {
+	}
+
+	//TODO is this used?
+	private void sendMessageToPeer(int sourcePort, String pong, int i) {
+	}
+	
 	//ask for update from primary. TODO returns what?
 	public boolean askingForUpdate() {
 		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
@@ -276,14 +288,6 @@ public class Server {
 				}
 			}
 		}
-	}
-
-	//TODO is this used?
-	private void sendOkMessageToPeer(int sourcePort) {
-	}
-
-	//TODO is this used?
-	private void sendMessageToPeer(int sourcePort, String pong, int i) {
 	}
 
 	public void receivePongMessage(RMmessage m) {
@@ -319,8 +323,8 @@ public class Server {
 
 	// Receive information from the new coordinator
 	public void receiveCoordinatorMessage(Message m) { 
-		System.out.println("P"+id+" received coordinator message from P" + m.getSourceId()); 
-		int	coord = (Integer) m.getData().get(0); this.coordinator = coord; 
+		//System.out.println("P"+id+" received coordinator message from P" + m.getSourceId()); 
+		//int coord = (Integer) m.getData().get(0); this.coordinator = coord; 
 	}
 
 	// Receive a ping and send a pong
@@ -349,8 +353,9 @@ public class Server {
 		ReplicaConnection c;
 		for(Iterator<ReplicaConnection> i = mReplicaConnections.iterator();i.hasNext();) {
 			c=i.next(); 
-			c.sendMessage("whoIsPrimary"); 
-			int r = c.receiveMessage2(); 
+			//c.sendMessage("whoIsPrimary"); 
+			int r = 1;
+			//r=c.receiveMessage2(); 
 			if(-1!=r) {
 				winner = r; 
 				break;
