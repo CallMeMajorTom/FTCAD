@@ -34,20 +34,25 @@ public class RMmessage implements Serializable {
     }
 
     public int getSourcePort() {
-        return sourcePort;
+    	return sourcePort;
     }
+    
     public void setSourcePort(int sourcePort) {
-        this.sourcePort = sourcePort;
+    	this.sourcePort = sourcePort;
     }
+    
     public int getDestinationPort() {
         return destinationPort;
     }
+    
     public void setDestinationPort(int destinationPort) {
         this.destinationPort = destinationPort;
     }
+    
     public String getType() {
         return type;
     }
+    
     public void setType(String type) {
         this.type = type;
     }

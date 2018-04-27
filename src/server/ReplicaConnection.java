@@ -37,7 +37,8 @@ public class ReplicaConnection extends Thread {
         }
     }
 
-	public void sendMessage(RMmessage msg) throws Exception {
+	public void sendRequest(String type) throws Exception {
+		RMmessage msg = new RMmessage(mServer.mPort,mPort,type);
 		if (mAlive) {
 			try {
 				mOut.writeObject(msg);
@@ -92,7 +93,7 @@ public class ReplicaConnection extends Thread {
 			// unmarshalling message
 			if (obj instanceof RMmessage) {
 				RMmessage msg = (RMmessage) obj;
-				mServer.controlRecieveMessage(msg);
+				mServer.controlRequest(msg);
 			} else if(obj instanceof ArrayList<?>) {
 				ArrayList<Message> messageList = (ArrayList<Message>) obj;
 				if(!mServer.mMessageList.equals(messageList)){
@@ -149,7 +150,18 @@ public class ReplicaConnection extends Thread {
 	}
 
 	public boolean getIfPrimary() {
+		try {
+			sendRequest("isPrimary");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.exit(-1);
+		}
+		return receiveReply();
+	}
+
+	private boolean receiveReply() {
 		// TODO Auto-generated method stub
-		return Primary.getIfPrimary();
+		return false;
 	}
 }

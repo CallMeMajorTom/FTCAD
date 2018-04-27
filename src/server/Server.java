@@ -38,7 +38,8 @@ public class Server {
 	protected final int mFEPort;// The Port of the Frontend
 	private ServerSocket mTSocket;// The Socket for communication between RM
 	private State m_state;// The State, including : crashed, undetermined, voting, backup(no_integrated), backup(integrated), primary
-    protected int Update_Version() {return mMessageList.size();}
+    
+	protected int Update_Version() {return mMessageList.size();}
 
 	private void StateMachine(){
 			while (true) {
@@ -179,6 +180,7 @@ public class Server {
 	}
 
 	//looks into primary file. ask everyone if they are the primary and checks after deadline. 
+	//TODO figure out if its needed and if needed fix it
 	protected boolean isPrimaryAliveDeadline()  {
 		// System.out.println(id + " checking if the coordinator is alive");//bad print
 		XMLConfiguration conf = null;
@@ -242,8 +244,7 @@ public class Server {
 			ReplicaConnection rmc = itr.next();
 			if (rmc.mPort > mPort && rmc.getAlive()) {
 				try {
-					RMmessage msg = new RMmessage(mPort,rmc.mPort,"ELECTION");
-					rmc.sendMessage(msg);
+					rmc.sendRequest("ELECTION");
 				} catch (Exception e) {}
 				synchronized (pendingElecResps) {
 					pendingElecResps.put(rmc.mPort, false);
@@ -258,13 +259,12 @@ public class Server {
 			System.out.println("1.sends ping to: "+peer.mPort);
 			if (peer.mPort == peerPort) {
 				try {
-					RMmessage msg = new RMmessage(mPort,peerPort,"PING");
                     synchronized (pendingPings) {
                         pendingPings.put(peerPort, true);
                         System.out.println("2.puts (port, true) into pendingpings map");
                     }
-					peer.sendMessage(msg);
-                    System.out.println("3.sent: " + msg.getType());
+					peer.sendRequest("PING");
+                    System.out.println("3.sent: " + "PING");
 				} catch (Exception e) {}
 			}
 		}
@@ -287,7 +287,7 @@ public class Server {
 			if (rmc.mPort == mPrimary_Port) {
 				try {
 					RMmessage msg = new RMmessage(mPort,rmc.mPort,"UPDATE");
-					rmc.sendMessage(msg);
+					rmc.sendRequest("UPDATE");
 					Thread.sleep(500);
 					System.out.println("sent update");
 					return true;
@@ -359,8 +359,7 @@ public class Server {
 			ReplicaConnection peer = itr.next();
 			if (peer.mPort == m.getSourcePort()) {
 				try {
-					RMmessage msg = new RMmessage(mPort,peer.mPort,"PONG");
-					peer.sendMessage(msg);
+					peer.sendRequest("PONG");
 				} catch (Exception e) {
 					System.err.println("Cant send for some reason");
 				}
@@ -387,7 +386,7 @@ public class Server {
 	}
 	
 	// TODO what's left?
-	synchronized public void controlRecieveMessage(RMmessage m) {
+	synchronized public void controlRequest(RMmessage m) {
 		switch(m.getType()) {
 		case "ELECTION": 
 			receiveElectionMessage(m);

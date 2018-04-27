@@ -37,8 +37,7 @@ public class Voting extends State{
                 ReplicaConnection rmc = itr.next();
                 if (rmc.getAlive()) {
                     try {
-                        RMmessage msg = new RMmessage(server.mPort,rmc.mPort,"COORDINATOR");
-                        rmc.sendMessage(msg);
+                        rmc.sendRequest("COORDINATOR");
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
