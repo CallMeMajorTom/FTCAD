@@ -49,6 +49,11 @@ public class ReplicaConnection extends Thread {
 			}
 		} else throw new Exception();
 	}
+	
+	private boolean sendReply() {
+		// TODO make it send reply
+		return false;
+	}
 
 	public void sendList(ArrayList<Message> m){
 		try {
@@ -57,23 +62,8 @@ public class ReplicaConnection extends Thread {
 			e.printStackTrace();
 		}
 	}
-
-	public boolean hasName(String testName) {
-		return testName.matches(mName);
-	}
-
-	public String getMName() {
-		return new String(mName);
-	}
-
-	public void setMName(String testName) {
-		mName = testName;
-	}
-
-	public boolean getAlive() {
-		return mAlive;
-	}
-
+	
+	//TODO make it receive request
 	private void receiveMessage() {
 		// receive message
 		Object obj = null;
@@ -105,6 +95,27 @@ public class ReplicaConnection extends Thread {
                 System.exit(-1);
             }
 		}
+	}
+	
+	private boolean receiveReply() {
+		// TODO make it receive reply
+		return false;
+	}
+
+	public boolean hasName(String testName) {
+		return testName.matches(mName);
+	}
+
+	public String getMName() {
+		return new String(mName);
+	}
+
+	public void setMName(String testName) {
+		mName = testName;
+	}
+
+	public boolean getAlive() {
+		return mAlive;
 	}
 	
 	public void destructor() {
@@ -158,10 +169,5 @@ public class ReplicaConnection extends Thread {
 			System.exit(-1);
 		}
 		return receiveReply();
-	}
-
-	private boolean receiveReply() {
-		// TODO Auto-generated method stub
-		return false;
 	}
 }
