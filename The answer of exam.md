@@ -30,7 +30,7 @@ To transfer the message between process with standard structure of messaages. Th
 ##### b. Describe one problem that is solved by using rpc instead of using udp/ip or tcp/ip and one risk associated with solving this problem.
 With using rpc it will be more clear for each command and wukk ve easier to solve the problem of wrong command by using rpc. The risk is it reduce the flexibility of content of message.
 
-###Theme 5
+### Theme 5
 ##### a. What problem does election algorithms try to solve? why is this important in distributed systems?
 The algorithm try to solve the problem when the primary replica management crashed. Because we need to make sure the primary do his job well and have all the previous information to conmmunicate with external front end, so it is important.
 
@@ -48,7 +48,6 @@ The distributed file system are used for fetching, reading, writing a file in di
 	
 ### Theme 7
 ##### a. Describe the basic architecture of fault-tolerant services masking permanent and temporay omission failures (crash of components in the architecture or loss of messages). What is the roles of each component and a critical requirement for each component?
-Answer: 
-
+Answer: We have a frontend and a bunch of replica management, one of them are primary replica management. If we have ommission failures like primary crashed, we start a election among all the other replica management and one of them are going to be primary. so, the job of primary is to communicate with frontend, the job of other replica management is to restore all the information and try to recover when primary is crashed, the job of frontend is communicate with primary and when the backup replica management crashed, you need to restart it which is not going to cause some failure during the communicaiton between each other. if there is any messages that have been omitted the backup replica management can decide to ask for retransmit, because if it didn't get correct up-to-date information, it cannot recover correct later.
 
 

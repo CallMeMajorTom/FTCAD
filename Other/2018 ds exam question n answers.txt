@@ -1,0 +1,50 @@
+1:a:a: Define reliability and availability using you own words.
+Answer: 
+	Reliability: It has to do with how reliable the system is. For example one should get the right answer back as soon as possible. An example of a system that is not reliable is a system that identifies people's names, but if the characters are not of the english alphabet, it crashes. 
+	Availability: It has to do with how available the system is. It is possible to have good availability even if the system crashes frequently as long as its possible to restart the system quickly and you do it. 
+1:a:b: Reliability can be achieved by (i) preventing, (ii) removing or (iii) tolerating faults. describe with examples how this can be done for att least two of the (i)-(iii)
+Answer: 
+	i: Preventing: One can prevent faults by not handling the request in case it has wrong parameters. One can also prevent can also avoid faults by using replication. By doing that one avoids single point of failure. Because of that one can for example handle that a part of the system crashes and still its possible to give the right answer.
+	ii: One can remove faults by identifying where it happens and remove the cause. For example if a client sends a message to a frontend it should always go to server but if it went to client and one identified that. One can remove the possibility of a client sending a message to another client by removing the ability of a client sending to another client on the frontend.
+	iii: Tolerating: One can avoid faults by not handling the request in case it has wrong parameters. One can also avoid can also avoid faults by using replication. By doing that one avoids single point of failure. Because of that one can for example handle that a part of the system crashes and still its possible to give the right answer. A example where one can tolerate faults is DNS service. Because DNS Service have eventual consistency it doesnt matter as much when it gives wrong answer because the user can then make a new request and eventually get a right answer.
+
+2:a:a: Describe at least two major differences in terms of critical sysem attriutes between synchronous and non-synchronous distributed systems?
+Answer: 
+	Synchronous distributed systems means that there are known upper bounds on response times, delays etc. The sender gets blocked until the message have been received. Since dependability is based on detecting omissions and temporal failures based on timing, it is dependent on that the distributed system is synchronous thats why its easier to implement dependability in a synchronous distributed system. 
+	Non-synchronous distributed systems means that there are no upper bound on times. The sender doesnt get blocked and can continue working. The Message also gets handled when the receiver is able to. 
+	A Difference is that there exist a builtin control of making sure messages gets to the receiver in synchronous distributed system.
+	Another Difference is non-synchronous distributed system is potentially faster because the sender doesnt have to synch with the receiver before the sender can continue working.
+2:a:b: Describe briefly one of the most common transparency properties for distributed systems.
+Answer: 
+	Access transparancy: The user does not need to know which computer he access, whether local or remote.
+	Location transparency: The actual place which for example a file is stored on shall be hidden from the user. For the user it shall feel like the file is on the local computer.
+
+3:a:a:i: Describe one service that operating systems must support to enable development of distributed systems.
+Answer: To be able to create new processes and threads and also schedule those.
+3:a:a:ii: Why is it possible to use eventual consistency in naming services?
+Answer: Because if a changes happens on a name server the information shall spread to relevant servers. Because of that servers with old information will sooner or later get the new information. Because of that a user can ask after information again if he gets a fault. Another reason is that the adress a name is bound to shall not be changed too frequently.
+3:a:a:iii: Describe one problem that is handled by employing cryptography and authentication in distributed systems.
+Answer: Cryptography prevents someone from reading messages with help of authentication. Because of that it also prevents someone without privileges gets access to resources. The point is to increase the security in the system.
+
+4:a:a: Describe one goal with interprocess communication and one risk associated with achieving this goal.
+Answer: To transfer the message between processes with standard structure of messaages. The point of the conmunication is to increase effectivity because multiple processes can work together in order to finish a assignment. The risk of the standard structure is some messages is too large to fit the structure. The risk of the teamwork is that the processes works on wrong data if there is no synchronization between the processes.
+4:a:b: Describe one problem that is solved by using rpc instead of using udp/ip or tcp/ip and one risk associated with solving this problem.
+Answer: With using rpc it will be more clear for each command and easier to solve the problem of wrong command by using rpc. The risk that is that it reduces the flexibility of the content of the message. The one using rpc becomes blocked until a request is done (or if a exception was thrown). That function is not a builtin part of udp or tcp. A Risk is that the process which made a request is blocked a long time if it takes a long time to finish the request. That time is time a process could have used for something else.
+
+5:a:a: What problem does election algorithms try to solve? why is this important in distributed systems?
+Answer: The algorithm try to solve the problem when the primary replica management crashed. Because we need to make sure the primary do his job well and have all the previous information to conmmunicate with external front end, so it is important.
+5:a:b: Provide two examples describing under what circumstances are logical clocks useful? Motivate you answer.
+Answer:
+
+6:a:a: Describe what distributed file systems are used for as well as a critical issue regarding providing a distributed file systems service.
+Answer: The distributed file system are used for fetching, reading, writing a file in distributed system. The issue of providing a file system server is the concurrency of the writing operation. and when you done with editing a file, how to synchronized it to the system.
+6:a:b: Please explain the oncepts IaaS, PaaS, and SaaS
+Answer:
+	IaaS: means infrastructure as a service. Which mean the vendor will provide hardware etc. to the user. such as virtual machine and virtual disk.
+	Paas: means platform as a service. Which mean the vendor will provide the platform as the service. user can build whatever they want on it.
+	SaaS: means software as a service. Which mean that the vendor will provide the software for user. such as email service etc.
+
+7:a:a: Describe the basic architecture of fault-tolerant services masking permanent and temporay omission failures (crash of components in the architecture or loss of messages). What is the roles of each component and a critical requirement for each component?
+Answer: We have a frontend and a bunch of replica management, one of them are primary replica management. If we have ommission failures like primary crashed, we start a election among all the other replica management and one of them are going to be primary. so, the job of primary is to communicate with frontend, the job of other replica management is to restore all the information and try to recover when primary is crashed, the job of frontend is communicate with primary and when the backup replica management crashed, you need to restart it which is not going to cause some failure during the communicaiton between each other. if there is any messages that have been omitted the backup replica management can decide to ask for retransmit, because if it didn't get correct up-to-date information, it cannot recover correct later.
+
+

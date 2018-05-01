@@ -26,6 +26,7 @@ public class Server {
 	protected static ArrayList<ReplicaConnection> mReplicaConnections = new ArrayList<ReplicaConnection>();// The array list of
 	protected static int mPrimary_Port = -1;// The port of the primary RM
 	protected boolean mHoldingElection;
+	protected boolean waitForPriamaryConfirm;
 	protected final int mPort;// The port of THIS server
 	protected final String mAddress = "localhost";//The address of THIS server
 	protected InetAddress mFEAddress;
@@ -136,9 +137,9 @@ public class Server {
 		mHoldingElection = false; 
 	}
 	
-	//looks into primary file. ask everyone if they are the primary.
+	//looks into primary file. ask the primary if it is alive
 	protected boolean isPrimaryAlive()  {
-		// System.out.println(id + " checking if the coordinator is alive");//bad print
+		//System.out.println(id + " checking if the coordinator is alive");//bad print
 		XMLConfiguration conf = null;
 		try {
 			conf = new XMLConfiguration();
@@ -149,7 +150,7 @@ public class Server {
 		int readPrimary = conf.getInt("port");
 		//System.out.println("primary is: "+Primary_Port);//bad print
 		if (mPrimary_Port == mPort && readPrimary == mPrimary_Port) {
-			// if you are the coordinator, then you know you are alive
+			//if you are the coordinator, then you know you are alive.
 			return true;
 		}else{
 			if(mPrimary_Port == mPort && readPrimary != mPrimary_Port){
@@ -222,9 +223,17 @@ public class Server {
 				pendingPings.remove(mPrimary_Port);
 				return false;
 			}
-			//TODO ask if coordinator is primary
-			mPrimary_Port = readPrimary;
-			return true;
+			sendPrimary(readPrimary);//TODO
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			if(waitForPriamaryConfirm = false){ return false;}
+			else {
+				mPrimary_Port = readPrimary;
+				return true;
+			}
 		} else
 			return false;
 	}
@@ -273,6 +282,33 @@ public class Server {
 					peer.sendRequest("PING");
                     System.out.println("3.sent: " + "PING");
 				} catch (Exception e) {}
+			}
+		}
+	}
+
+	private void sendPrimary(int peerPort){
+		waitForPriamaryConfirm = false;
+		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
+			ReplicaConnection peer = itr.next();
+			if (peer.mPort == peerPort) {
+				try {
+					peer.sendRequest("PRIMARY");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	private void sendYes(int peerPort){
+		for (ListIterator<ReplicaConnection> itr = mReplicaConnections.listIterator(); itr.hasNext();) {
+			ReplicaConnection peer = itr.next();
+			if (peer.mPort == peerPort) {
+				try {
+					peer.sendRequest("YES");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -340,6 +376,14 @@ public class Server {
 
 	}
 
+	public void receivePrimaryMessage(RMmessage m){
+		if(mPort == mPrimary_Port) {sendYes(m.getSourcePort());}
+	}
+
+	public void receiveYesMessage(RMmessage m){
+		waitForPriamaryConfirm = true;
+	}
+
 	// TODO: Put it in Backup state
 	public void receiveElectionMessage(RMmessage m) {
 		System.out.println("P" + mPort + " received election message from P" + m.getSourcePort());
@@ -352,10 +396,9 @@ public class Server {
 	}
 
 	// Receive information from the new coordinator
-	public void receiveCoordinatorMessage(Message m) { 
-		//TODO
-		//System.out.println("P"+id+" received coordinator message from P" + m.getSourceId()); 
-		//int coord = (Integer) m.getData().get(0); this.coordinator = coord; 
+	public void receiveCoordinatorMessage(RMmessage m) {
+		System.out.println("P"+mPort+" received coordinator message from P" + m.getSourcePort());
+		this.mPrimary_Port = m.getSourcePort();
 	}
 
 	// Receive a ping and send a pong
@@ -371,10 +414,6 @@ public class Server {
 				}
 			}
 		}
-	}
-
-	//TODO is this used?
-	private void receiveCoordinatorMessage(RMmessage m) {
 	}
 
 	public synchronized void broadcast(Message message) throws IOException {
@@ -418,7 +457,15 @@ public class Server {
 			receiveUpdateMessage(m);
 			System.out.println("Receive Update");
 			break;
-		default: 
+		case "PRIMARY":
+			receivePrimaryMessage(m);
+			System.out.println("Receive Primary");
+			break;
+		case "YES":
+			receivePrimaryMessage(m);
+			System.out.println("Receive Primary");
+			break;
+		default:
 			System.err.println("Unknown message type " + m);
 			break;
 		}

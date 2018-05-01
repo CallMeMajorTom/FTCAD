@@ -12,6 +12,8 @@ public class RMmessage implements Serializable {
     public static final String COORDINATOR = "/coordinator";//declare oneself as primary
     public static final String PING = "/ping";//asking if alive
     public static final String PONG = "/pong";//answering if alive
+    public static final String PRIMARY = "/primary";//asking if it is primary
+    public static final String YES = "yes";//answer if it is primary
     public static final String UPDATE = "/update";
     
     //sourceId is the origin of the message. sourcePort is sourceId
