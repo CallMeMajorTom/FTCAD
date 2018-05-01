@@ -159,7 +159,14 @@ public class Server {
 			ArrayList<Integer> plist = new ArrayList<Integer>();//primary list;
 			for(ReplicaConnection each : mReplicaConnections) {
 				//TODO ask everyone if they are the primary and save them to primary list	
-				boolean isPrimary = each.getIfPrimary(); //not sure what I tried here
+				boolean isPrimary;
+				try {
+					isPrimary = (boolean) each.sendRequest("isPrimary").obj;
+				} catch (Exception e) {//should not happen unless hacker or not done correctly
+					e.printStackTrace();
+					System.exit(-1);
+					isPrimary = false;
+				} //not sure what I tried here
 				if(isPrimary) plist.add(each.mPort);
 			}
 			if(plist.size()==1) {
@@ -286,7 +293,6 @@ public class Server {
 			ReplicaConnection rmc = itr.next();
 			if (rmc.mPort == mPrimary_Port) {
 				try {
-					RMmessage msg = new RMmessage(mPort,rmc.mPort,"UPDATE");
 					rmc.sendRequest("UPDATE");
 					Thread.sleep(500);
 					System.out.println("sent update");

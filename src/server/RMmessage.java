@@ -22,11 +22,14 @@ public class RMmessage implements Serializable {
 
     private String type;
 	private InetAddress sourceAddr;
+	private boolean mReply;
+	public Object obj;
 
-    public RMmessage(int sourcePort, int destinationPort, String type) {
+    public RMmessage(int sourcePort, int destinationPort, String type, boolean reply) {
         this.sourcePort = sourcePort;
         this.destinationPort = destinationPort;
         this.type = type;
+        mReply = reply;
     }
 
     public List<Object> getData() {
@@ -56,4 +59,9 @@ public class RMmessage implements Serializable {
     public void setType(String type) {
         this.type = type;
     }
+
+	public boolean isReply() {
+		// TODO Auto-generated method stub
+		return mReply;
+	}
 }

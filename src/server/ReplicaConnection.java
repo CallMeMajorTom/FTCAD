@@ -20,6 +20,8 @@ public class ReplicaConnection extends Thread {
 	private boolean mAlive = false;
 	private Server mServer;
 	private String mName;
+	private Boolean mGotReply = false;
+	private RMmessage mReply;
 
 	public ReplicaConnection(int port, Server s, ServerSocket TSocket) {
 		mServer = s;
@@ -37,8 +39,8 @@ public class ReplicaConnection extends Thread {
         }
     }
 
-	public void sendRequest(String type) throws Exception {
-		RMmessage msg = new RMmessage(mServer.mPort,mPort,type);
+	synchronized public RMmessage sendRequest(String type) throws Exception {
+		RMmessage msg = new RMmessage(mServer.mPort,mPort,type,false);
 		if (mAlive) {
 			try {
 				mOut.writeObject(msg);
@@ -48,6 +50,7 @@ public class ReplicaConnection extends Thread {
 				mAlive = false;
 			}
 		} else throw new Exception();
+		return receiveReply();
 	}
 	
 	private boolean sendReply() {
@@ -63,7 +66,7 @@ public class ReplicaConnection extends Thread {
 		}
 	}
 	
-	//TODO make it receive request
+	//receives a request or reply
 	private void receiveMessage() {
 		// receive message
 		Object obj = null;
@@ -71,6 +74,7 @@ public class ReplicaConnection extends Thread {
 			obj = mIn.readObject();
 		} catch (SocketException e) {
 		    System.err.println("ReplicaConnection: "+mPort+" is dead");
+		    synchronized(mGotReply ) {mGotReply = true; mReply = null;}
 			mAlive = false;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -83,7 +87,9 @@ public class ReplicaConnection extends Thread {
 			// unmarshalling message
 			if (obj instanceof RMmessage) {
 				RMmessage msg = (RMmessage) obj;
-				mServer.controlRequest(msg);
+				if(msg.isReply()) {
+				    synchronized(mGotReply ) {mGotReply = true; mReply = msg;}
+				}else mServer.controlRequest(msg);
 			} else if(obj instanceof ArrayList<?>) {
 				ArrayList<Message> messageList = (ArrayList<Message>) obj;
 				if(!mServer.mMessageList.equals(messageList)){
@@ -97,9 +103,24 @@ public class ReplicaConnection extends Thread {
 		}
 	}
 	
-	private boolean receiveReply() {
-		// TODO make it receive reply
-		return false;
+	private RMmessage receiveReply() throws Exception {
+		// receive message
+		RMmessage r = null;
+		boolean i = true;
+		while(i) {
+			synchronized (mGotReply) {
+				if(mGotReply) i = false;
+				else{ 
+					r = mReply;
+					mGotReply = true;
+				}
+			}
+		}
+		if(r==null) {
+			System.err.println("The RM you try to receive reply from is not alive");
+			throw new Exception();
+		}
+		return r;
 	}
 
 	public boolean hasName(String testName) {
@@ -133,12 +154,14 @@ public class ReplicaConnection extends Thread {
 	private boolean startConnection() {
 		if(mPort < mServer.mPort) {//initiate the accept
 			try{
+				//mSocket2 = mTSocket.accept();
 				mSocket = new Socket(mTSocket.getInetAddress(),mPort);//socket
 			}catch(ConnectException e) {// cant connect
 				return false;
 			} catch (IOException e) {e.printStackTrace(); System.exit(-1);}//TODO why happen?
 		} else if(mPort > mServer.mPort){//wait for accept
 			try {
+				//mSocket2 = new Socket(mTSocket.getInetAddress(),mPort);//socket
 				mSocket = mTSocket.accept();
 			} catch (IOException e1) {
 			    System.err.println("The server you try to connect is not alive");
@@ -151,6 +174,8 @@ public class ReplicaConnection extends Thread {
 		try {
 			mOut = new ObjectOutputStream(mSocket.getOutputStream());
 			mIn = new ObjectInputStream(mSocket.getInputStream());
+			//mOut2 = new ObjectOutputStream(mSocket2.getOutputStream());
+			//mIn2 = new ObjectInputStream(mSocket2.getInputStream());
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(-1);
@@ -158,16 +183,5 @@ public class ReplicaConnection extends Thread {
 	    System.out.println("ReplicaConnection: "+mPort+" is alive");
 		mAlive = true;
 		return true;
-	}
-
-	public boolean getIfPrimary() {
-		try {
-			sendRequest("isPrimary");
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			System.exit(-1);
-		}
-		return receiveReply();
 	}
 }
