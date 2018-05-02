@@ -161,13 +161,14 @@ public class Server {
 			for(ReplicaConnection each : mReplicaConnections) {
 				//TODO ask everyone if they are the primary and save them to primary list	
 				boolean isPrimary;
+				RMmessage reply = null;
 				try {
-					isPrimary = (boolean) each.sendRequest("isPrimary").obj;
-				} catch (Exception e) {//should not happen unless hacker or not done correctly
-					e.printStackTrace();
-					System.exit(-1);
+					reply = each.sendRequest("isPrimary");
+					isPrimary = (boolean) reply.obj;	
+				} catch (Exception e1) {//should not happen unless hacker 
+					System.out.println("isprimaryalive: assumed dead");
 					isPrimary = false;
-				} //not sure what I tried here
+				}
 				if(isPrimary) plist.add(each.mPort);
 			}
 			if(plist.size()==1) {
@@ -376,7 +377,7 @@ public class Server {
 
 	}
 
-	public void receivePrimaryMessage(RMmessage m){
+	public void receivePrimaryMessage(RMmessage m){//used to accept ones primary declaration unless oneself is primary.
 		if(mPort == mPrimary_Port) {sendYes(m.getSourcePort());}
 	}
 
@@ -430,7 +431,7 @@ public class Server {
 		return mPrimary_Port ;
 	}
 	
-	// TODO what's left?
+	// TODO what's left? Write description for each case
 	synchronized public void controlRequest(RMmessage m) {
 		switch(m.getType()) {
 		case "ELECTION": 
@@ -457,13 +458,16 @@ public class Server {
 			receiveUpdateMessage(m);
 			System.out.println("Receive Update");
 			break;
-		case "PRIMARY":
+		case "PRIMARY"://used to declare oneself as primary
 			receivePrimaryMessage(m);
 			System.out.println("Receive Primary");
 			break;
 		case "YES":
 			receivePrimaryMessage(m);
 			System.out.println("Receive Primary");
+			break;
+		case "ifPrimary":
+			
 			break;
 		default:
 			System.err.println("Unknown message type " + m);

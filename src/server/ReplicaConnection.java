@@ -48,9 +48,10 @@ public class ReplicaConnection extends Thread {
 			} catch (IOException e) {
 				System.err.println("The RM you try to send msg is not alive");
 				mAlive = false;
+				throw new Exception();
 			}
+			return receiveReply();
 		} else throw new Exception();
-		return receiveReply();
 	}
 	
 	private boolean sendReply() {
@@ -104,7 +105,7 @@ public class ReplicaConnection extends Thread {
 	}
 	
 	private RMmessage receiveReply() throws Exception {
-		// receive message
+		// receive reply from receive message. TODO use blocking instead of this busy loop
 		RMmessage r = null;
 		boolean i = true;
 		while(i) {
