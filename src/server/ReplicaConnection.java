@@ -28,6 +28,7 @@ public class ReplicaConnection extends Thread {
 		mName = "unknown"+port;
 		mPort = port;
 		mTSocket = TSocket;
+		
 	}
 
 	public void run() {
