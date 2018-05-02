@@ -94,6 +94,7 @@ public class ReplicaConnection extends Thread {
 				    synchronized(mGotReply ) {mGotReply = true; mReply = msg;}
 				}else mServer.controlRequest(msg);
 			}else if(arraylistmsg) {
+				@SuppressWarnings("unchecked")
 				ArrayList<Message> messageList = (ArrayList<Message>) obj;
 				if(!mServer.mMessageList.equals(messageList)){
 					System.out.println("Update version:"+ mServer.Update_Version());
