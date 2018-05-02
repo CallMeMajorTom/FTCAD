@@ -86,12 +86,14 @@ public class ReplicaConnection extends Thread {
 		} else {
 		    //System.out.println(obj.getClass());
 			// unmarshalling message
+			boolean arraylistmsg = false;
+			if(obj instanceof ArrayList<?>) if(((ArrayList<?>)obj).get(0) instanceof Message) arraylistmsg = true;
 			if (obj instanceof RMmessage) {
 				RMmessage msg = (RMmessage) obj;
 				if(msg.isReply()) {
 				    synchronized(mGotReply ) {mGotReply = true; mReply = msg;}
 				}else mServer.controlRequest(msg);
-			} else if(obj instanceof ArrayList<?>) {
+			}else if(arraylistmsg) {
 				ArrayList<Message> messageList = (ArrayList<Message>) obj;
 				if(!mServer.mMessageList.equals(messageList)){
 					System.out.println("Update version:"+ mServer.Update_Version());
