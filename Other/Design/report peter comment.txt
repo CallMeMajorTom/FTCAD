@@ -1,0 +1,1 @@
+state machine was a good solution to how to simplify how the server class worked since it also meant that as a group we could divide the work to each state instead of concentrating all the code in the server class.
