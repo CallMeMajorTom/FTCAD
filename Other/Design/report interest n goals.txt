@@ -1,0 +1,17 @@
+we are interested in solutions, their rationale and their properties/consequences.
+1.      You do not need to do anything more with the implementation
+2.      You need to send me a report that
+a.      describes your solution and points out
+ i.     What works
+ ii.     What doesn’t work (plus any thoughts why)
+b.      describes how it should work
+ i.     use models to describe scenarios with intended behavior w.r.t. communication, e.g. a sequence diagram as shown below (note that you have more than 2 components)
+ ii.     give a couple of scenarios
+1.      startup
+2.      primary crash
+3.      secondary crash
+4.      replica comes alive
+5.      new client connects
+ iii.     use the scenarios to describe how it should work and discuss what functionality that would need to be added or fixed in order to achieve it (note: you do not have to solve the problem)
+More diagrams can be used to discuss what works and what doesn’t in current solution as well as what’s not yet in place. Activity diagram seems next most useful to sequence diagram.
+scenarios should be described in detail. E.g., who is sending what on which channel and who is doing what.
