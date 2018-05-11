@@ -1,0 +1,9 @@
+replica manager
+fix graphic delay
+primary
+test 2 rm
+commenting
+backup
+todo the code todo
+isprimaryalive
+update version

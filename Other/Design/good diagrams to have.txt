@@ -1,0 +1,13 @@
+uml diagrams:
+
+structure:
+	class 
+	component 
+behaviour:
+	state machine
+	activity
+	interaction:
+		communication 
+		interaction overview = activity + sequence
+		sequence 
+	use case diagram
