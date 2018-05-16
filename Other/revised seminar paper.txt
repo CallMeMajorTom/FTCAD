@@ -1,0 +1,29 @@
+q1 
+a1 When you have more than one client running on the server, you broadcast the order to each client so the same drawing appears on the other clients after a short delay. Also if you right click to remove a drawing it will do the same for each client.
+a2 To make the program fail silent we give the server a frontend so if a client disconnects then it will say that they have left or if the server crashes it will exit all the clients out of the program with an appropiate error message. if the server crashed we will have backup for the server and update the backup server.
+a3a&b tcp is more reliable than udp so when a crash happens we need to make sure the message is not lost. using a statless connection is important so there is more storage available. if the frontend crashes it exits the program.
+a3c We will use the bully method to identify the primary server.
+a3d for the launcher there will be a configuration file to replicate operating system functionality. we will use the launcher to restart it as soon possible if it crashes.
+a4a the type then have one thread per client. All these threads are linkedblockingqueue. The receiver is the server. The multiple senders are the clients. 
+Client to server:
+	-join
+	-draw
+	-delete
+	-leave
+Server to client:
+	-draw
+	-acknowledge join
+	-delete
+	-leave
+last questions: interface in method, process notification, process in api, seperate notification from what we do with, up calls
+will I right on the board and talk at the start.
+I think its better if someone else write but we dont have time for that so I think it sounds good.
+client says it draw to server 
+server get it and sends it to every client (including the initial client)
+a4b factory is template method design pattern?
+a4c
+a4d
+a4e
+a4f we ar using the bully algorithm after we detect a failing service, how do we write initialize the election (how do we decide main) whoever has the highest id sends his id to everyone and they all recognise that server as the main server.
+a4g what? what is the uuid class? what objects? clients? or draw? does each client have a linkedblockingqueue? what is a linkedblocking queue?
+a5 the client has a class representation from server? which it uses to seamlessly to call the servers function eg. broadcast
