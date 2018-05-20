@@ -1,1 +1,5 @@
 state machine was a good solution to how to simplify how the server class worked since it also meant that as a group we could divide the work to each state instead of concentrating all the code in the server class.
+
+clients sends x(a number) messages to server
+server does a periodically check every 50 milliseconds to handle y(x minus not expected messages) messages.
+The Y messages are saved in primary then the backups. Then The acks for them are sent. Then they are broadcasted. Then they are handled depending on what command type they are (only join is necessary to handle).
