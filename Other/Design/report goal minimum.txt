@@ -1,0 +1,20 @@
+describe old solution. 
+	What works?
+		What happens at startup?
+		What happens when primary crash?
+		what happens when backup crash?
+		what happens when replica comes alive?
+		what happens new client connects?
+	What doesn’t work? Why doesnt it work?
+		What happens at startup?
+		What happens when primary crash?
+		what happens when backup crash?
+		what happens when replica comes alive?
+		what happens new client connects?
+Describe new solution.
+	How does it work? Use models to describe scenarios with intended behavior with respect to communication, for example a sequence diagram
+		What happens at startup?
+		What happens when primary crash?
+		what happens when backup crash?
+		what happens when replica comes alive?
+		what happens new client connects?

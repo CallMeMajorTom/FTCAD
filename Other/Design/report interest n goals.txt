@@ -15,3 +15,24 @@ b.      describes how it should work
  iii.     use the scenarios to describe how it should work and discuss what functionality that would need to be added or fixed in order to achieve it (note: you do not have to solve the problem)
 More diagrams can be used to discuss what works and what doesn’t in current solution as well as what’s not yet in place. Activity diagram seems next most useful to sequence diagram.
 scenarios should be described in detail. E.g., who is sending what on which channel and who is doing what.
+
+describe old solution. 
+	What works?
+		What happens at startup?
+		What happens when primary crash?
+		what happens when backup crash?
+		what happens when replica comes alive?
+		what happens new client connects?
+	What doesn’t work? Why doesnt it work?
+		What happens at startup?
+		What happens when primary crash?
+		what happens when backup crash?
+		what happens when replica comes alive?
+		what happens new client connects?
+Describe new solution.
+	How does it work? Use models to describe scenarios with intended behavior with respect to communication, for example a sequence diagram
+		What happens at startup?
+		What happens when primary crash?
+		what happens when backup crash?
+		what happens when replica comes alive?
+		what happens new client connects?
